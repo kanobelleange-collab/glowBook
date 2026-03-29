@@ -1,16 +1,10 @@
 using System;
-
 using Domain.Enum;
 
-namespace   Domain.Entities
+namespace Domain.Entities
 {
-    
-
-
-
-public class SpaBeaute : Etablissement
-{
-    
+    public class SpaBeaute : Etablissement
+    {
         public ServiceSpa Service { get; private set; }
         public List<string> SoinsCorps { get; private set; }
         public List<string> Rituels { get; private set; }
@@ -19,9 +13,12 @@ public class SpaBeaute : Etablissement
         public SpaBeaute(
             string nom, string adresse, string ville,
             string telephone, string email,
-            ServiceSpa service = ServiceSpa.None,
-            int cabines = 0)
-            : base(nom, adresse, ville, telephone, email)
+            ServiceSpa service  = ServiceSpa.None,
+            int cabines         = 0,
+            string? description = null)  // ✅ optionnel en dernier
+            : base(nom, adresse, ville, telephone, email,
+                   CategorieEtablissement.SpaBeaute, // ✅ catégorie fixe
+                   description)
         {
             Service               = service;
             NombresCabinesPrivees = cabines;

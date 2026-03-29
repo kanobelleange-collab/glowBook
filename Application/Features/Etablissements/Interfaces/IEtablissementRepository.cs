@@ -1,5 +1,6 @@
 // Application/Features/Etablissements/Interfaces/IEtablissementRepository.cs
 using Domain.Entities;
+using Application.Features.Etablissements.DTOs;
 
 namespace Application.Features.Etablissements.Interfaces
 {
@@ -17,5 +18,11 @@ namespace Application.Features.Etablissements.Interfaces
         Task AddAsync(Etablissement etablissement);
         Task UpdateAsync(Etablissement etablissement);
         Task DeleteAsync(Guid id);
+        
+        Task<List<EtablissementDto>> GetProximiteAsync(
+        double latitude,
+        double longitude,
+     double rayonKm = 3,
+        CategorieEtablissement? categorie = null);
     }
 }

@@ -2,22 +2,33 @@ using System;
 
 namespace Domain.Entities
 {
-    public class Etablissement  // ✅ abstract supprimé
+    public class Etablissement  
     {
         public Guid Id { get; private set; }
         public string Nom { get; private set; }
         public string Adresse { get; private set; }
+         public string Quartier  { get; set; } = string.Empty; // ✅ entré par l'établissement
         public string Ville { get; private set; }
         public string Telephone { get; private set; }
         public string Email { get; private set; }
-      public CategorieEtablissement Categorie { get; private set; } // ✅ plus sûr qu'un string    // ✅ ajouté
-        public string? Description { get; private set; }  // ✅ ajouté
-        public double Note { get; private set; }           // ✅ ajouté
+      public CategorieEtablissement Categorie { get; private set; } 
+        public string? Description { get; private set; }  
+        public double Note { get; private set; }           
         public List<string> Photos { get; private set; }
         public List<HoraireOuverture> Horaires { get; private set; }
         public double NoteMoyenne { get; private set; }
         public bool EstActif { get; private set; }
         public DateTime DateCreation { get; private set; }
+        // ✅ Invisibles de l'extérieur — jamais entrés manuellement
+        public double Latitude  { get; private set; }
+        public double Longitude { get; private set; }
+
+    // ✅ Seule façon de les définir — appelée automatiquement par le handler
+        public void DefinirLocalisation(double latitude, double longitude)
+        {
+        Latitude  = latitude;
+        Longitude = longitude;
+        }
 
         public Etablissement(
             string nom,

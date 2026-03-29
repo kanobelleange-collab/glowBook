@@ -16,6 +16,9 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
             RuleFor(x => x.Adresse)
                 .NotEmpty().WithMessage("L'adresse de l'établissement est requise.")
                 .MaximumLength(200).WithMessage("L'adresse de l'établissement ne peut pas dépasser 200 caractères.");
+            RuleFor(x=> x.Quartier)
+                .NotEmpty().WithMessage("le quartier de letablissement ne peut pas depasser 30  caractere")
+                .MaximumLength(30).WithMessage("le quartier de letablissement ne peut pas depasser 30  caractere");
 
             RuleFor(x => x.Ville)
                 .NotEmpty().WithMessage("La ville de l'établissement est requise.")

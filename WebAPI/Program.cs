@@ -4,6 +4,8 @@ using Infrastructure.DBcontext;
 using Application.Features.Payements.Interfaces;
 using Infrastructure.Repositories;
 using Application.Features.Etablissements.Interfaces;
+using Infrastructure.Services;
+using Application.Features.Etablissements.Commands.CreateEtablissement;
 
 
 
@@ -21,6 +23,29 @@ var app = builder.Build();
 builder.Services.AddHttpClient<IPaymentService, CinetPayService>();
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
 builder.Services.AddSingleton<IApplicationDbContext, ApplicationDbContext>();
+
+// ✅ Géocodage OpenStreetMap
+builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>
+{
+    client.DefaultRequestHeaders.Add(
+        "User-Agent", "GlowBook/1.0 contact@glowbook.com");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
+// ✅ Repositories
+builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
+
+// ✅ MediatR
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(CreateEtablissementHandler).Assembly));
+
+// ✅ Enum en string dans l'API
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()));
+
 
 
 // Initialiser la BD au démarrage

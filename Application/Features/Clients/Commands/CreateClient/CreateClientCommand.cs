@@ -8,7 +8,8 @@ namespace Application.Features.Clients.Commands.CreateClient
     public string? Nom { get; set; }
     public string? Email { get; set; }
     public string Telephone { get; set; } = string.Empty; // ✅ non-nullable
-    public string Ville { get; set; } = string.Empty;     // ✅ non-nullable
+    public string Ville { get; set; } = string.Empty;  
+    public  required string Quartier{get;set;}   // ✅ non-nullable
 
     }
 }

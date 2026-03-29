@@ -12,6 +12,7 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
         public  required string TypeEtablissement { get; set; }
         public  required string Nom { get; set; }
         public  required string Adresse { get; set; }
+        public required string Quartier {get;set;}
         public  required string Ville { get; set; }
         public  required string Telephone { get; set; }
         public  required string Email { get; set; }

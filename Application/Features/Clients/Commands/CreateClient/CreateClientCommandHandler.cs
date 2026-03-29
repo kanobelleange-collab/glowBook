@@ -22,7 +22,8 @@ namespace Application.Features.Clients.Commands.CreateClient
                 request.Nom,
                 request.Email,
                 request.Telephone ?? throw new Exception("Le téléphone est obligatoire."),
-                request.Ville     ?? throw new Exception("La ville est obligatoire.")
+                request.Ville     ?? throw new Exception("La ville est obligatoire."),
+                request.Quartier    ?? throw new Exception("Le quartier  est obligatoire.")
             );
 
             await _clientRepository.AddAsync(client);

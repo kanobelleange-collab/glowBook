@@ -11,6 +11,7 @@ namespace Application.Features.Etablissements.Commands.UpdateEtablissement
         public Guid Id { get; set; } // ID de l'établissement à mettre à jour
         public required string Nom { get; set; }
         public required string Adresse { get; set; }
+        public string Quartier  { get; set; } = string.Empty; // ✅ entré par l'établissement
         public required string Ville { get; set; }
         public  required string Telephone { get; set; }
         public  CategorieEtablissement Categorie { get; set; } // ✅ enum

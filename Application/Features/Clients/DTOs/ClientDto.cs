@@ -9,6 +9,7 @@ namespace Application.Features.Clients.DTOs
         public string? Email { get; set; }
         public string? Telephone { get; set; }
         public string? Ville { get; set; }
+        public  string? Quartier { get; set; }
        
     }
 }
