@@ -1,4 +1,3 @@
-// Application/Features/Etablissements/Queries/GetProximite/GetProximiteQueryHandler.cs
 using Application.Common.Interfaces;
 using Application.Features.Etablissements.DTOs;
 using Application.Features.Etablissements.Interfaces;
@@ -24,19 +23,17 @@ namespace Application.Features.Etablissements.Queries.GetProximite
             GetProximiteQuery query,
             CancellationToken cancellationToken)
         {
-            // ✅ Géocodage automatique de la position du client
             var coords = await _geocodage.GeocodeAsync(
                 query.Ville,
                 query.Quartier)
                 ?? throw new Exception(
                     $"Localisation introuvable : {query.Quartier}, {query.Ville}");
 
-            // ✅ Recherche des établissements proches
             return await _repository.GetProximiteAsync(
                 coords.Latitude,
                 coords.Longitude,
                 query.RayonKm,
-                query.Categorie);
+                query.TypeServiceNom);  // ← remplacé Categorie par TypeServiceNom
         }
     }
 }

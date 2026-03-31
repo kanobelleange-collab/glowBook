@@ -32,10 +32,6 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
                 .NotEmpty().WithMessage("L'email de l'établissement est requis.")
                 .EmailAddress().WithMessage("L'email n'est pas valide.");
 
-            RuleFor(x => x.TypeEtablissement)
-                .NotEmpty().WithMessage("Le type d'établissement est requis.")
-                .Must(type => new[] { "SalonCoiffure", "CabinetProthetiste", "SalonMassage", "SpaBeaute" }.Contains(type))
-                .WithMessage("Le type d'établissement doit être l'un des suivants : SalonCoiffure, CabinetProthetiste, SalonMassage, SpaBeaute.");
-        }
+               }
     }
 } 

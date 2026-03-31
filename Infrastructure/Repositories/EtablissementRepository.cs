@@ -16,7 +16,7 @@ namespace Infrastructure.Repositories
 
         public EtablissementRepository(IApplicationDbContext dbContext)
         {
-            _dbContext = dbContext 
+            _dbContext = dbContext
                 ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
@@ -56,46 +56,64 @@ namespace Infrastructure.Repositories
             return result.ToList();
         }
 
-        public async Task<List<Etablissement>> GetByCategorieAsync(
-            CategorieEtablissement categorie)
+        // ✅ Recherche par type de service (remplace GetByCategorieAsync)
+        public async Task<List<EtablissementDto>> GetByServiceAsync(string typeServiceNom)
         {
             using var connection = _dbContext.CreateConnection();
             const string query = @"
-                SELECT * FROM Etablissements 
-                WHERE Categorie = @Categorie AND IsDeleted = FALSE
-                ORDER BY Nom ASC";
+                SELECT DISTINCT e.* 
+                FROM Etablissements e
+                JOIN EtablissementServices es ON es.EtablissementId = e.Id
+                WHERE es.TypeServiceNom = @TypeServiceNom
+                  AND e.IsDeleted = FALSE
+                ORDER BY e.Nom ASC";
 
-            var result = await connection.QueryAsync<Etablissement>(
-                query, new { Categorie = categorie.ToString() });
+            var result = await connection.QueryAsync<EtablissementDto>(
+                query, new { TypeServiceNom = typeServiceNom });
             return result.ToList();
         }
 
-        public async Task<List<Etablissement>> RechercherAsync(
-            string motCle, string? ville = null)
+        // ✅ Recherche par mot-clé, ville et/ou service
+        public async Task<List<EtablissementDto>> RechercherAsync(
+            string? motCle = null,
+            string? ville = null,
+            string? typeServiceNom = null)
         {
             using var connection = _dbContext.CreateConnection();
+
             var query = @"
-                SELECT * FROM Etablissements 
-                WHERE (Nom LIKE @MotCle OR Description LIKE @MotCle) 
-                AND IsDeleted = FALSE";
+                SELECT DISTINCT e.*
+                FROM Etablissements e
+                LEFT JOIN EtablissementServices es ON es.EtablissementId = e.Id
+                WHERE e.IsDeleted = FALSE";
 
             var parameters = new DynamicParameters();
-            parameters.Add("MotCle", $"%{motCle}%");
+
+            if (!string.IsNullOrEmpty(motCle))
+            {
+                query += " AND (e.Nom LIKE @MotCle OR e.Description LIKE @MotCle)";
+                parameters.Add("MotCle", $"%{motCle}%");
+            }
 
             if (!string.IsNullOrEmpty(ville))
             {
-                query += " AND Ville = @Ville";
+                query += " AND e.Ville = @Ville";
                 parameters.Add("Ville", ville);
             }
 
-            query += " ORDER BY Nom ASC";
+            if (!string.IsNullOrEmpty(typeServiceNom))
+            {
+                query += " AND es.TypeServiceNom = @TypeServiceNom";
+                parameters.Add("TypeServiceNom", typeServiceNom);
+            }
 
-            var result = await connection.QueryAsync<Etablissement>(
-                query, parameters);
+            query += " ORDER BY e.Nom ASC";
+
+            var result = await connection.QueryAsync<EtablissementDto>(query, parameters);
             return result.ToList();
         }
 
-        public async Task<List<Etablissement>> GetMieuxNotesAsync(int top = 10)
+        public async Task<List<EtablissementDto>> GetMieuxNotesAsync(int top = 10)
         {
             using var connection = _dbContext.CreateConnection();
             const string query = @"
@@ -104,23 +122,23 @@ namespace Infrastructure.Repositories
                 ORDER BY Note DESC 
                 LIMIT @Top";
 
-            var result = await connection.QueryAsync<Etablissement>(
+            var result = await connection.QueryAsync<EtablissementDto>(
                 query, new { Top = top });
             return result.ToList();
         }
 
-        // ✅ Latitude/Longitude ajoutés dans le INSERT
+        // ✅ Categorie supprimé du INSERT
         public async Task AddAsync(Etablissement etablissement)
         {
             using var connection = _dbContext.CreateConnection();
             const string query = @"
                 INSERT INTO Etablissements 
-                (Id, Nom, Adresse, Ville, Telephone, Email, 
-                 Categorie, Description, DateCreation, Note, 
+                (Id, Nom, Adresse, Quartier, Ville, Telephone, Email,
+                 Description, DateCreation, Note, 
                  Latitude, Longitude, IsDeleted)
                 VALUES 
-                (@Id, @Nom, @Adresse, @Ville, @Telephone, @Email,
-                 @Categorie, @Description, @DateCreation, @Note,
+                (@Id, @Nom, @Adresse, @Quartier, @Ville, @Telephone, @Email,
+                 @Description, @DateCreation, @Note,
                  @Latitude, @Longitude, FALSE)";
 
             await connection.ExecuteAsync(query, new
@@ -128,29 +146,30 @@ namespace Infrastructure.Repositories
                 Id           = etablissement.Id.ToString(),
                 etablissement.Nom,
                 etablissement.Adresse,
+                etablissement.Quartier,
                 etablissement.Ville,
                 etablissement.Telephone,
                 etablissement.Email,
-                Categorie    = etablissement.Categorie.ToString(), // ✅ enum → string
                 etablissement.Description,
                 DateCreation = DateTime.UtcNow,
                 etablissement.Note,
-                etablissement.Latitude,  // ✅ géocodé automatiquement
-                etablissement.Longitude  // ✅ géocodé automatiquement
+                etablissement.Latitude,
+                etablissement.Longitude
             });
         }
 
+        // ✅ Categorie supprimé du UPDATE
         public async Task UpdateAsync(Etablissement etablissement)
         {
             using var connection = _dbContext.CreateConnection();
             const string query = @"
                 UPDATE Etablissements 
                 SET Nom              = @Nom, 
-                    Adresse          = @Adresse, 
+                    Adresse          = @Adresse,
+                    Quartier         = @Quartier,
                     Ville            = @Ville, 
                     Telephone        = @Telephone, 
                     Email            = @Email, 
-                    Categorie        = @Categorie, 
                     Description      = @Description,
                     Note             = @Note,
                     Latitude         = @Latitude,
@@ -162,14 +181,14 @@ namespace Infrastructure.Repositories
             {
                 etablissement.Nom,
                 etablissement.Adresse,
+                etablissement.Quartier,
                 etablissement.Ville,
                 etablissement.Telephone,
                 etablissement.Email,
-                Categorie        = etablissement.Categorie.ToString(), // ✅
                 etablissement.Description,
                 etablissement.Note,
-                etablissement.Latitude,  // ✅
-                etablissement.Longitude, // ✅
+                etablissement.Latitude,
+                etablissement.Longitude,
                 DateModification = DateTime.UtcNow,
                 Id               = etablissement.Id.ToString()
             });
@@ -189,7 +208,7 @@ namespace Infrastructure.Repositories
                 WHERE Id = @Id";
 
             var rowsAffected = await connection.ExecuteAsync(
-                query, 
+                query,
                 new { Id = id.ToString(), DateModification = DateTime.UtcNow });
 
             if (rowsAffected == 0)
@@ -197,52 +216,112 @@ namespace Infrastructure.Repositories
                     $"Établissement avec l'Id {id} non trouvé");
         }
 
-        // ✅ Recherche par proximité — utilise EtablissementDto avec DistanceKm?
+        // ✅ Recherche par proximité — Categorie remplacé par TypeServiceNom
         public async Task<List<EtablissementDto>> GetProximiteAsync(
             double latitude,
             double longitude,
             double rayonKm = 3,
-            CategorieEtablissement? categorie = null)
+            string? typeServiceNom = null)
         {
             using var connection = _dbContext.CreateConnection();
 
             var query = @"
-                SELECT 
-                    Id, Nom, Adresse, Ville, Telephone,
-                    Categorie, Description, Note, EstActif,
-                    Latitude, Longitude,
-                    (6371 * ACOS(
-                        COS(RADIANS(@Lat)) * COS(RADIANS(Latitude)) *
-                        COS(RADIANS(Longitude) - RADIANS(@Lon)) +
-                        SIN(RADIANS(@Lat)) * SIN(RADIANS(Latitude))
-                    )) AS DistanceKm
-                FROM Etablissements
-                WHERE IsDeleted  = FALSE
-                  AND EstActif   = TRUE
-                  AND Latitude  != 0
-                  AND Longitude != 0
+                SELECT DISTINCT
+                e.Id, e.Nom, e.Adresse, e.Quartier, e.Ville, e.Telephone,
+                e.Description, e.Note, e.EstActif,
+                e.Latitude, e.Longitude,
+                (6371 * ACOS(
+                COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
+                COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
+                SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
+            )) AS DistanceKm
+            FROM Etablissements e
+                LEFT JOIN EtablissementServices es ON es.EtablissementId = e.Id
+                WHERE e.IsDeleted  = FALSE
+              AND e.EstActif   = TRUE
+                  AND e.Latitude  != 0
+                  AND e.Longitude != 0
                   AND (6371 * ACOS(
-                        COS(RADIANS(@Lat)) * COS(RADIANS(Latitude)) *
-                        COS(RADIANS(Longitude) - RADIANS(@Lon)) +
-                        SIN(RADIANS(@Lat)) * SIN(RADIANS(Latitude))
-                      )) <= @Rayon";
+                    COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
+                COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
+                SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
+                  )) <= @Rayon
+         " + (string.IsNullOrEmpty(typeServiceNom) 
+        ? "" 
+        : " AND LOWER(es.TypeServiceNom) = LOWER(@TypeServiceNom)");
 
             var parameters = new DynamicParameters();
             parameters.Add("Lat",   latitude);
             parameters.Add("Lon",   longitude);
             parameters.Add("Rayon", rayonKm);
 
-            if (categorie.HasValue)
+            if (!string.IsNullOrEmpty(typeServiceNom))
             {
-                query += " AND Categorie = @Categorie";
-                parameters.Add("Categorie", categorie.Value.ToString());
+                query += " AND es.TypeServiceNom = @TypeServiceNom";
+                parameters.Add("TypeServiceNom", typeServiceNom);
             }
 
             query += " ORDER BY DistanceKm ASC";
 
-            var result = await connection.QueryAsync<EtablissementDto>(
-                query, parameters);
+            var result = await connection.QueryAsync<EtablissementDto>(query, parameters);
             return result.ToList();
         }
+
+        public async Task AddServiceAsync(EtablissementService service)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"
+        INSERT INTO EtablissementServices 
+        (Id, EtablissementId, TypeServiceNom)
+        VALUES 
+        (@Id, @EtablissementId, @TypeServiceNom)";
+
+    await connection.ExecuteAsync(query, new
+    {
+        Id              = service.Id.ToString(),
+        EtablissementId = service.EtablissementId.ToString(),
+        service.TypeServiceNom
+    });
+}
+
+public async Task AddPrestationAsync(Prestation prestation)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"
+        INSERT INTO Prestations 
+        (Id, ServiceId, Nom, Description, Prix, DureeMinutes)
+        VALUES 
+        (@Id, @ServiceId, @Nom, @Description, @Prix, @DureeMinutes)";
+
+    await connection.ExecuteAsync(query, new
+    {
+        Id        = prestation.Id.ToString(),
+        ServiceId = prestation.ServiceId.ToString(),
+        prestation.Nom,
+        prestation.Description,
+        prestation.Prix,
+        prestation.DureeMinutes
+    });
+}
+
+public async Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"
+        SELECT * FROM EtablissementServices 
+        WHERE EtablissementId = @EtablissementId";
+
+    var result = await connection.QueryAsync<EtablissementService>(
+        query, new { EtablissementId = etablissementId.ToString() });
+    return result.ToList();
+}
+
+public async Task DeleteServiceAsync(Guid serviceId)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"DELETE FROM EtablissementServices WHERE Id = @Id";
+    await connection.ExecuteAsync(query, new { Id = serviceId.ToString() });
+}
     }
+
 }

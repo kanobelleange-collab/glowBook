@@ -5,9 +5,8 @@ using MediatR;
 using Domain.Entities;
 using Application.Features.Etablissements.Interfaces;
 using Application.Features.Etablissements.DTOs;
-using Application.Common.Interfaces; // ✅ IGeocodageService
+using Application.Common.Interfaces;
 using AutoMapper;
-using Domain.Enum;
 
 namespace Application.Features.Etablissements.Commands.CreateEtablissement
 {
@@ -16,12 +15,12 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
     {
         private readonly IEtablissementRepository _repository;
         private readonly IMapper                  _mapper;
-        private readonly IGeocodageService        _geocodage; // ✅ ajouté
+        private readonly IGeocodageService        _geocodage;
 
         public CreateEtablissementHandler(
             IEtablissementRepository repository,
             IMapper mapper,
-            IGeocodageService geocodage) // ✅ ajouté
+            IGeocodageService geocodage)
         {
             _repository = repository;
             _mapper     = mapper;
@@ -32,159 +31,43 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
             CreateEtablissementCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. Créer l'entité selon le type
-            Etablissement etablissement = request.TypeEtablissement switch
-            {
-                "SalonCoiffure"      => CreerSalonCoiffure(request),
-                "SalonMassage"       => CreerSalonMassage(request),
-                "CabinetEsthetique"  => CreerCabinetEsthetique(request),
-                "CabinetProthetiste" => CreerCabinetProthetiste(request),
-                "SpaBeaute"          => CreerSpaBeaute(request),
-                _ => throw new ArgumentException(
-                    $"Type d'établissement invalide : {request.TypeEtablissement}")
-            };
-
-            // 2. ✅ Géocodage automatique — l'établissement entre juste ville + quartier
-            var coords = await _geocodage.GeocodeAsync(
+            // 1. Créer l'établissement de base
+            var etablissement = new Etablissement(
+                request.Nom,
+                request.Adresse,
                 request.Ville,
-                request.Quartier); // ✅ ajoutez Quartier dans la Command
+                request.Telephone,
+                request.Email,
+                request.Description
+            );
 
+            etablissement.DefinirQuartier(request.Quartier);
+
+            // 2. Géocodage automatique
+            var coords = await _geocodage.GeocodeAsync(request.Ville, request.Quartier);
             if (coords != null)
-                etablissement.DefinirLocalisation(
-                    coords.Latitude,
-                    coords.Longitude);
+                etablissement.DefinirLocalisation(coords.Latitude, coords.Longitude);
 
-            // 3. Ajouter les photos si présentes
+            // 3. Photos
             if (request.Photos != null && request.Photos.Any())
                 foreach (var photo in request.Photos)
                     etablissement.AjouterPhoto(photo);
 
-            // 4. Ajouter les horaires si présents
+            // 4. Horaires
             if (request.Horaires != null && request.Horaires.Any())
-            {
-                foreach (var horaireDto in request.Horaires)
+                foreach (var h in request.Horaires)
                 {
-                    var jour      = Enum.Parse<DayOfWeek>(horaireDto.Jour, ignoreCase: true);
-                    var ouverture = TimeSpan.Parse(horaireDto.HeureOuverture);
-                    var fermeture = TimeSpan.Parse(horaireDto.HeureFermeture);
-                    etablissement.AjouterHoraire(
-                        new HoraireOuverture(jour, ouverture, fermeture));
+                    var jour = HoraireOuverture.ConvertirJour(h.Jour);
+                    var ouverture = HoraireOuverture.ParseHeure(h.HeureOuverture);
+                    var fermeture = HoraireOuverture.ParseHeure(h.HeureFermeture);
+                    etablissement.AjouterHoraire(new HoraireOuverture(jour, ouverture, fermeture));
                 }
-            }
 
-            // 5. Sauvegarder en base
+            // 5. Sauvegarder
             await _repository.AddAsync(etablissement);
 
-            // 6. Retourner le DTO
+            // 6. Retourner le DTO avec l'Id pour la suite
             return _mapper.Map<EtablissementDto>(etablissement);
-        }
-
-        // -------------------------------------------------------
-        // Méthodes privées pour chaque type d'établissement
-        // -------------------------------------------------------
-
-        private SalonCoiffure CreerSalonCoiffure(CreateEtablissementCommand request)
-        {
-            if (request.SpecialitesTresse == null || !request.SpecialitesTresse.Any())
-                throw new ArgumentException(
-                    "Un salon de coiffure doit avoir au moins une spécialité de tresse.");
-
-            if (request.TypesCheveux == null || !request.TypesCheveux.Any())
-                throw new ArgumentException(
-                    "Un salon de coiffure doit préciser les types de cheveux acceptés.");
-
-            return new SalonCoiffure(
-                request.Nom,
-                request.Adresse,
-                request.Ville,
-                request.Telephone,
-                request.Email,
-                request.SpecialitesTresse,
-                request.TypesCheveux,
-                request.AccepteHommes,
-                request.AccepteEnfants
-            );
-        }
-
-        private SalonMassage CreerSalonMassage(CreateEtablissementCommand request)
-        {
-            if (request.TypesMassage == null || !request.TypesMassage.Any())
-                throw new ArgumentException(
-                    "Un salon de massage doit avoir au moins un type de massage.");
-
-            if (string.IsNullOrWhiteSpace(request.Ambiance))
-                throw new ArgumentException(
-                    "Un salon de massage doit préciser son ambiance.");
-
-            return new SalonMassage(
-                request.Nom,
-                request.Adresse,
-                request.Ville,
-                request.Telephone,
-                request.Email,
-                request.TypesMassage,
-                request.Ambiance,
-                request.DisponibleADomicile,
-                request.DureeMinimaleEnMinutes
-            );
-        }
-
-        private CabinetEsthetique CreerCabinetEsthetique(CreateEtablissementCommand request)
-        {
-            if (!request.ProposeSoinsVisage &&
-                !request.ProposeEpilation   &&
-                !request.ProposeOnglerie    &&
-                !request.ProposeMaquillage)
-                throw new ArgumentException(
-                    "Un cabinet esthétique doit proposer au moins un type de soin.");
-
-            return new CabinetEsthetique(
-                request.Nom,
-                request.Adresse,
-                request.Ville,
-                request.Telephone,
-                request.Email,
-                request.ProposeSoinsVisage,
-                request.ProposeEpilation,
-                request.ProposeOnglerie,
-                request.ProposeMaquillage
-            );
-        }
-
-        private CabinetProthetiste CreerCabinetProthetiste(CreateEtablissementCommand request)
-        {
-            if (!request.ProposeProtheseOngles    &&
-                !request.ProposeExtensionCils     &&
-                !request.ProposeProtheseCapillaire)
-                throw new ArgumentException(
-                    "Un cabinet prothésiste doit proposer au moins une prestation.");
-
-            return new CabinetProthetiste(
-                request.Nom,
-                request.Adresse,
-                request.Ville,
-                request.Telephone,
-                request.Email,
-                request.ProposeProtheseOngles,
-                request.ProposeExtensionCils,
-                request.ProposeProtheseCapillaire
-            );
-        }
-
-        private SpaBeaute CreerSpaBeaute(CreateEtablissementCommand request)
-        {
-            if (request.Service == 0)
-                throw new ArgumentException(
-                    "Un spa doit avoir au moins un équipement.");
-
-            return new SpaBeaute(
-                request.Nom,
-                request.Adresse,
-                request.Ville,
-                request.Telephone,
-                request.Email,
-                request.Service
-            );
         }
     }
 }
