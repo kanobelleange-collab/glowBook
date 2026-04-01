@@ -21,6 +21,7 @@ namespace Domain.Entities
         public List<string> Photos { get; private set; }
         public List<HoraireOuverture> Horaires { get; private set; }
         public List<EtablissementService> Services { get; private set; }
+        public List<Employee>Employees{get;set;}
 
         public Etablissement(
             string nom,
@@ -45,6 +46,7 @@ namespace Domain.Entities
             Photos       = new List<string>();
             Horaires     = new List<HoraireOuverture>();
             Services     = new List<EtablissementService>();
+            Employees    =new List<Employee>();
         }
 
         // Constructeur vide pour Dapper
@@ -59,6 +61,7 @@ namespace Domain.Entities
             Photos    = new List<string>();
             Horaires  = new List<HoraireOuverture>();
             Services  = new List<EtablissementService>();
+            Employees    =new List<Employee>();
         }
 
         public void DefinirQuartier(string quartier) => Quartier = quartier;

@@ -1,11 +1,12 @@
 using MediatR;
-using Application.Features.Praticiens.DTOs;
+using Application.Features.Employees.DTOs;
+using Domain.Entities;
 
-namespace Application.Features.Praticiens.Commands.AjoutDisponibilite
+namespace Application.Features.Employees.Commands.AjoutDisponibilite
 {
-    public class AjouterDisponibiliteCommand : IRequest<PraticienDto>
+    public class AjouterDisponibiliteCommand : IRequest<EmployeeDto>
     {
-        public Guid PraticienId { get; set; }
+        public Guid EmployeeId { get; set; }
         public  required string Jour { get; set; }
         // ex : "Monday", "Tuesday"...
         public required  string HeureDebut { get; set; }

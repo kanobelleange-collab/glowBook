@@ -5,6 +5,8 @@ using Infrastructure.DBcontext;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.OpenApi.Models;
+using Application.Features.Employees.Interfaces;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,7 @@ builder.Services.AddSingleton<IApplicationDbContext>(provider =>
 
 // ✅ Uniquement Etablissement pour les tests
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
 // ✅ Géocodage OpenStreetMap
 builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>

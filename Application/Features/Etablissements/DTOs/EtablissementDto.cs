@@ -1,4 +1,5 @@
 using System;
+using Domain.Entities;
 
 namespace Application.Features.Etablissements.DTOs
 {
@@ -17,6 +18,7 @@ namespace Application.Features.Etablissements.DTOs
 
         public List<string>? Photos { get; set; } // URLs des photos "SalonCoiffure", "CabinetProthetiste", "SalonMassage", "SpaBeaute"
         public List<HoraireOuvertureDto>? Horaires { get; set; } //
+        public List<Employee>?Employees{get;set;}
    
         
         public double? DistanceKm { get; set; } // "SalonCoiffure", "CabinetProthetiste", "SalonMassage", "SpaBeaute"

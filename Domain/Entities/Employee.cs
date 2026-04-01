@@ -2,37 +2,36 @@ using System;
 
 namespace   Domain.Entities
 {
-    public class Praticien
+    public class Employee
     {
-        public Guid Id { get; private set; }
-        public string Nom { get; private set; }
-        public string Prenom { get; private set; }
-        public string Specialite { get; private set; }
-        public string? Photo { get; private set; }
-        public string? Description { get; private set; }
-        public int AnneesExperience { get; private set; }
-        public double NoteMoyenne { get; private set; }
-        public Guid EtablissementId { get; private set; }
-        public List<Disponibilite> Disponibilites { get; private set; }
+        public Guid Id { get;  set; }
+        public Guid EtablissementId { get;  set; }
+        public string Nom { get; set; }
+        public string Prenom { get;  set; }
+        public string Specialite { get; set; }
+        public string? Photo { get; set; }
+        
+        public String  DateCreation{get;set;}
 
-        public Praticien(string nom, string prenom, string specialite, Guid etablissementId, int anneesExperience = 0)
+        public int AnneesExperience { get; set; }
+        public double NoteMoyenne { get;  set; }
+       
+        public List<Disponibilite> Disponibilites { get;  set; }
+
+        public Employee(Guid etablissementId,string nom, string prenom, string specialite,  String  dateCreation,int anneesExperience = 0)
         {
             Id               = Guid.NewGuid();
+            EtablissementId  = etablissementId;
             Nom              = nom;
             Prenom           = prenom;
             Specialite       = specialite;
-            EtablissementId  = etablissementId;
+            DateCreation       =dateCreation;
+        
             AnneesExperience = anneesExperience;
             Disponibilites   = new List<Disponibilite>();
             NoteMoyenne      = 0;
         }
-        // ✅ Méthode dans la bonne classe
-        public void MettreAJourDescription(string description)
-        {
-        if (string.IsNullOrWhiteSpace(description))
-            throw new ArgumentException("La description ne peut pas être vide.");
-        Description = description;
-        }
+       
 
 
         public void AjouterDisponibilite(Disponibilite d) => Disponibilites.Add(d);

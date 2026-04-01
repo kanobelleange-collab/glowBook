@@ -225,27 +225,28 @@ namespace Infrastructure.Repositories
         {
             using var connection = _dbContext.CreateConnection();
 
-            var query = @"
-                SELECT DISTINCT
-                e.Id, e.Nom, e.Adresse, e.Quartier, e.Ville, e.Telephone,
-                e.Description, e.Note, e.EstActif,
-                e.Latitude, e.Longitude,
-                (6371 * ACOS(
-                COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
-                COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
-                SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
-            )) AS DistanceKm
-            FROM Etablissements e
-                LEFT JOIN EtablissementServices es ON es.EtablissementId = e.Id
-                WHERE e.IsDeleted  = FALSE
-              AND e.EstActif   = TRUE
-                  AND e.Latitude  != 0
-                  AND e.Longitude != 0
-                  AND (6371 * ACOS(
-                    COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
-                COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
-                SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
-                  )) <= @Rayon
+           var query = @"
+SELECT DISTINCT
+    e.Id, e.Nom, e.Adresse, e.Quartier, e.Ville, e.Telephone,
+    e.Description, e.Note, e.EstActif,
+    e.Latitude, e.Longitude,
+    (6371 * ACOS(
+        COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
+        COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
+        SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
+    )) AS DistanceKm
+FROM Etablissements e
+INNER JOIN EtablissementServices es
+    ON es.EtablissementId = e.Id
+WHERE e.IsDeleted = FALSE
+  AND e.EstActif = TRUE
+  AND e.Latitude != 0
+  AND e.Longitude != 0
+  AND (@Ville IS NULL OR LOWER(e.Ville) = LOWER(@Ville))
+  AND (@Quartier IS NULL OR LOWER(e.Quartier) = LOWER(@Quartier))
+  AND (@TypeServiceNom IS NULL OR es.TypeServiceNom = @TypeServiceNom)
+HAVING DistanceKm <= @RayonKm
+ORDER BY DistanceKm ASC;
          " + (string.IsNullOrEmpty(typeServiceNom) 
         ? "" 
         : " AND LOWER(es.TypeServiceNom) = LOWER(@TypeServiceNom)");
@@ -321,6 +322,41 @@ public async Task DeleteServiceAsync(Guid serviceId)
     using var connection = _dbContext.CreateConnection();
     const string query = @"DELETE FROM EtablissementServices WHERE Id = @Id";
     await connection.ExecuteAsync(query, new { Id = serviceId.ToString() });
+}
+
+public async Task AddEmployeeAsync(Employee employee)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"
+        INSERT INTO Employes 
+            (Id, EtablissementId, Nom, Prenom, Specialite, Photo, AnneesExperience, NoteMoyenne, DateCreation)
+        VALUES 
+            (@Id, @EtablissementId, @Nom, @Prenom, @Specialite, @Photo, @AnneesExperience, @NoteMoyenne, @DateCreation)";
+
+    await connection.ExecuteAsync(query, new
+    {
+        Id               = employee.Id.ToString(),
+        EtablissementId  = employee.EtablissementId.ToString(),
+        employee.Nom,
+        employee.Prenom,
+        employee.Specialite,
+        employee.Photo,
+        employee.AnneesExperience,
+        employee.NoteMoyenne,
+        employee.DateCreation
+    });
+}
+
+public async Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etablissementId)
+{
+    using var connection = _dbContext.CreateConnection();
+    const string query = @"
+        SELECT * FROM Employes 
+        WHERE EtablissementId = @EtablissementId";
+
+    var result = await connection.QueryAsync<Employee>(
+        query, new { EtablissementId = etablissementId.ToString() });
+    return result.ToList();
 }
     }
 

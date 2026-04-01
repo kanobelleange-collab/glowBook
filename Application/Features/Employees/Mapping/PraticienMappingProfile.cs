@@ -1,17 +1,16 @@
 using AutoMapper;
 using Domain.Entities;
-using Application.Features.Praticiens.DTOs;
+using Application.Features.Employees.DTOs;
 
-namespace Application.Features.Praticiens.Mapping
+namespace Application.Features.Employees.Mapping
 {
-    public class PraticienMappingProfile : Profile
+    public class EmployeeMappingProfile : Profile
     {
-        public PraticienMappingProfile()
+        public EmployeeMappingProfile()
         {
             // Praticien → PraticienDto
-            CreateMap<Praticien, PraticienDto>()
-                .ForMember(dest => dest.NomComplet,
-                    opt => opt.MapFrom(src => src.NomComplet))
+            CreateMap<Employee, EmployeeDto>()
+                
                 .ForMember(dest => dest.Disponibilites,
                     opt => opt.MapFrom(src => src.Disponibilites)).ReverseMap();
 
