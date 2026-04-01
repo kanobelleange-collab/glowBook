@@ -28,7 +28,7 @@ namespace Application.Features.Employees.Commands.UpdateEmployee
             employee.Nom = request.Nom;
             employee.Prenom = request.Prenom;
             employee.Specialite = request.Specialite;
-            employee.Photo = request.Photo;
+            employee.UrlPhoto = request.UrlPhoto;
             employee.AnneesExperience = request.AnneesExperience;
             
 

@@ -324,31 +324,11 @@ public async Task DeleteServiceAsync(Guid serviceId)
     await connection.ExecuteAsync(query, new { Id = serviceId.ToString() });
 }
 
-public async Task AddEmployeeAsync(Employee employee)
-{
-    using var connection = _dbContext.CreateConnection();
-    const string query = @"
-        INSERT INTO Employes 
-            (Id, EtablissementId, Nom, Prenom, Specialite, Photo, AnneesExperience, NoteMoyenne, DateCreation)
-        VALUES 
-            (@Id, @EtablissementId, @Nom, @Prenom, @Specialite, @Photo, @AnneesExperience, @NoteMoyenne, @DateCreation)";
 
-    await connection.ExecuteAsync(query, new
+
+
+        public async Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etablissementId)
     {
-        Id               = employee.Id.ToString(),
-        EtablissementId  = employee.EtablissementId.ToString(),
-        employee.Nom,
-        employee.Prenom,
-        employee.Specialite,
-        employee.Photo,
-        employee.AnneesExperience,
-        employee.NoteMoyenne,
-        employee.DateCreation
-    });
-}
-
-public async Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etablissementId)
-{
     using var connection = _dbContext.CreateConnection();
     const string query = @"
         SELECT * FROM Employes 
@@ -357,7 +337,7 @@ public async Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etabli
     var result = await connection.QueryAsync<Employee>(
         query, new { EtablissementId = etablissementId.ToString() });
     return result.ToList();
-}
+    }
     }
 
 }

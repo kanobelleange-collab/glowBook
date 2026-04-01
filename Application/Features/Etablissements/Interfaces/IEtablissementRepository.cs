@@ -38,7 +38,7 @@ namespace Application.Features.Etablissements.Interfaces
     Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId);
     Task DeleteServiceAsync(Guid serviceId);
 
-    Task AddEmployeeAsync(Employee employee);
+   
     Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etablissementId);
     }
 }

@@ -6,7 +6,7 @@ namespace Application.Features.Employees.DTOs
     {
         public Guid EmployeeId { get; set; }
         public  required string Jour { get; set; } // "Lundi", "Mardi", etc.
-        public TimeSpan HeureDebut { get; set; }
-        public TimeSpan HeureFin { get; set; }
+        public string HeureDebut { get; set; }=string.Empty;
+        public string HeureFin { get; set; }=string.Empty;
     }
 }

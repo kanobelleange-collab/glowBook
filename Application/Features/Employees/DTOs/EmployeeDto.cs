@@ -10,7 +10,7 @@ namespace Application.Features.Employees.DTOs
         public string? Nom { get; set; }
         public  required string Prenom { get; set; }
         public  required string Specialite { get; set; }
-        public string? Photo { get; set; }
+        public string? UrlPhoto { get; set; }
         public string DateCreation{get;set;}=string.Empty;
         public int AnneesExperience { get; set; }
         public double NoteMoyenne { get; set; }

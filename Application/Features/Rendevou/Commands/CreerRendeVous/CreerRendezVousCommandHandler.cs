@@ -1,6 +1,6 @@
 using MediatR;
 using Application.Features.Rendevou.Interfaces;
-using Application.Features.Praticiens.Interfaces;
+using Application.Features.Employees.Interfaces;
 using Application.Features.ServiceEsthtiques.Interfaces;
 using Application.Features.Notifications.Interfaces;
 using Application.Features.Rendevou.DTOs;
@@ -16,18 +16,18 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
         : IRequestHandler<CreerRendeVousCommand, RendezVousDto>
     {
         private readonly IRendezVousRepository _rdvRepository;
-        private readonly IPraticienRepository _praticienRepository;
+        private readonly IEmployeeRepository _EmployeeRepository;
         private readonly IServiceEsthetiqueRepository _serviceRepository;
         private readonly INotificationService _notificationService;
 
         public CreerRendezVousCommandHandler(
             IRendezVousRepository rdvRepository,
-            IPraticienRepository praticienRepository,
+            IEmployeeRepository employeeRepository,
             IServiceEsthetiqueRepository serviceRepository,
             INotificationService notificationService)
         {
             _rdvRepository       = rdvRepository;
-            _praticienRepository = praticienRepository;
+            _EmployeeRepository = employeeRepository;
             _serviceRepository   = serviceRepository;
             _notificationService = notificationService;
         }
@@ -36,11 +36,11 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             CreerRendeVousCommand command,
             CancellationToken cancellationToken)
         {
-            var praticien = await _praticienRepository.GetByIdAsync(command.PraticienId)
+            var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId)
                 ?? throw new Exception("Praticien introuvable.");
 
             bool occupe = await _rdvRepository
-                .CreneauDejaOccupeAsync(command.PraticienId, command.DateHeure);
+                .CreneauDejaOccupeAsync(command.EmployeeId, command.DateHeure);
             if (occupe)
                 throw new Exception("Ce créneau est déjà occupé.");
 
@@ -49,7 +49,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
 
             var rdv = new RdvEntity(
                 command.ClientId,
-                command.PraticienId,
+                command.EmployeeId,
                 command.ServiceId,
                 command.EtablissementId,
                 command.DateHeure,
@@ -67,7 +67,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             {
                 Id              = rdv.Id,
                 ClientId        = rdv.ClientId,
-                PraticienId     = rdv.PraticienId,
+                EmployeeId     = rdv.EmployeeId,
                 ServiceId       = rdv.ServiceId,
                 EtablissementId = rdv.EtablissementId,
                 DateHeure       = rdv.DateHeure,

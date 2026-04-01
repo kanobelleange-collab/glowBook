@@ -70,11 +70,11 @@ namespace Infrastructure.Repositories
             using var connection = _dbContext.CreateConnection();
             const string query = @"
                 INSERT INTO `Employees` 
-                    (`Id`, `EtablissementId`, `Nom`, `Prenom`, `Specialite`, `Photo`, 
-                     `AnneesExperience`, `NoteMoyenne`, `DateCreation`)
+                    (`Id`, `EtablissementId`, `Nom`, `Prenom`, `Specialite`, `UrlPhoto`, 
+                     `AnneesExperience`, `DateCreation`)
                 VALUES 
-                    (@Id, @EtablissementId, @Nom, @Prenom, @Specialite, @Photo,
-                     @AnneesExperience, @NoteMoyenne, @DateCreation)";
+                    (@Id, @EtablissementId, @Nom, @Prenom, @Specialite, @UrlPhoto,
+                     @AnneesExperience,  @DateCreation)";
 
             await connection.ExecuteAsync(query, employee);
         }
@@ -87,7 +87,7 @@ namespace Infrastructure.Repositories
                     `Nom` = @Nom,
                     `Prenom` = @Prenom,
                     `Specialite` = @Specialite,
-                    `Photo` = @Photo,
+                    `UrlPhoto` = @UrlPhoto,
                     `AnneesExperience` = @AnneesExperience
                 WHERE `Id` = @Id";
 

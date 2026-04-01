@@ -19,6 +19,6 @@ public  record CreateEtablissementCommand : IRequest<EtablissementDto>
     public string Description{get;set;} = string.Empty;
     public List<string>? Photos { get; set; }
     public List<HoraireOuvertureDto>? Horaires { get; set; }
-    public List<Employee>?Employees {get;set;}
+
 }
 }

@@ -122,14 +122,18 @@ CREATE TABLE IF NOT EXISTS Clients (
 CREATE TABLE IF NOT EXISTS Employees (
     IntId           INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     Id              CHAR(36)     NOT NULL UNIQUE,
+    EtablissementId CHAR(36)     NOT NULL,
     Nom             VARCHAR(100) NOT NULL,
+    Prenom          VARCHAR(100)  NOT NULL,
     Email           VARCHAR(150) NULL,
     Telephone       VARCHAR(20)  NULL,
-    EtablissementId CHAR(36)     NOT NULL,
     Specialite      VARCHAR(100) NULL,
+    UrlPPhoto       VARCHAR(500) NULL,
+    AnneeExperience int(10)      NOT NULL,
+    
     EstActif        TINYINT(1)   NOT NULL DEFAULT 1,
-    DateCreation    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT FK_Praticiens_Etablissement
+    DateCreation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT FK_Employees_Etablissement
         FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id) ON DELETE CASCADE
 );
 
@@ -147,7 +151,7 @@ CREATE TABLE IF NOT EXISTS RendezVous (
     RaisonAnnulation TEXT          NULL,
     DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_RDV_Client        FOREIGN KEY (ClientId)        REFERENCES Clients(Id),
-    CONSTRAINT FK_RDV_Praticien     FOREIGN KEY (PraticienId)     REFERENCES Praticiens(Id),
+    CONSTRAINT FK_RDV_Employee    FOREIGN KEY (EmployeeId)     REFERENCES Praticiens(Id),
     CONSTRAINT FK_RDV_Etablissement FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id)
 );
 

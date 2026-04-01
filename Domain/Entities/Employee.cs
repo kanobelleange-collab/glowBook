@@ -8,13 +8,14 @@ namespace   Domain.Entities
         public Guid EtablissementId { get;  set; }
         public string Nom { get; set; }
         public string Prenom { get;  set; }
+        
         public string Specialite { get; set; }
-        public string? Photo { get; set; }
+        public string? UrlPhoto { get; set; }
         
         public String  DateCreation{get;set;}
 
         public int AnneesExperience { get; set; }
-        public double NoteMoyenne { get;  set; }
+
        
         public List<Disponibilite> Disponibilites { get;  set; }
 
@@ -29,7 +30,6 @@ namespace   Domain.Entities
         
             AnneesExperience = anneesExperience;
             Disponibilites   = new List<Disponibilite>();
-            NoteMoyenne      = 0;
         }
        
 

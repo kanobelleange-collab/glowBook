@@ -61,24 +61,7 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
 
             // 5. Sauvegarder l'établissement
             await _repository.AddAsync(etablissement);
-
-            // 6. Employés (ajoutés après l'établissement car besoin de l'Id)
-            if (request.Employees!= null)
-                foreach (var e in request.Employees)
-                {
-                    var employee = new Employee(
-                        etablissement.Id,
-                        e.Nom,
-                        e.Prenom,
-                        e.Specialite,
-                        DateTime.UtcNow.ToString("yyyy-MM-dd"),
-                        e.AnneesExperience);
-
-                    if (e.Photo != null)
-                        employee.Photo = e.Photo;
-
-                    await _repository.AddEmployeeAsync(employee);
-                }
+             
 
             return _mapper.Map<EtablissementDto>(etablissement);
         }

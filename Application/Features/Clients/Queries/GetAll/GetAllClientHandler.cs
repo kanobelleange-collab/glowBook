@@ -20,7 +20,7 @@ namespace Application.Features.Clients.Queries.GetAll
             var clients = await _clientRepository.GetAllAsync();
             return clients.Select(c => new ClientDto
             {
-                Id = c.Id,
+                // Id = c.Id,
                 Nom = c.Nom,
                 Email = c.Email,
                 Telephone = c.Telephone,

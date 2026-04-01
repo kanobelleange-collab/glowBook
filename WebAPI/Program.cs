@@ -1,6 +1,8 @@
 using Application.Common.Interfaces;
 using Application.Features.Etablissements.Commands.CreateEtablissement;
 using Application.Features.Etablissements.Interfaces;
+using Application.Features.Rendevou.Interfaces;
+using Application.Features.Clients.Interfaces;
 using Infrastructure.DBcontext;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -65,15 +67,21 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+ 
+// ✅ Base de données (Correction de l'injection)
+builder.Services.AddScoped<ApplicationDbContext>(provider => 
+    new ApplicationDbContext(builder.Configuration));
 
-// ✅ Base de données// ✅ Passer IConfiguration explicitement
-builder.Services.AddSingleton<IApplicationDbContext>(provider =>
-    new ApplicationDbContext(
-        builder.Configuration)); // ✅ IConfiguration passé directement
+// On lie l'interface à la même instance pour que tout le monde soit content
+builder.Services.AddScoped<IApplicationDbContext>(provider => 
+    provider.GetRequiredService<ApplicationDbContext>());
 
-// ✅ Uniquement Etablissement pour les tests
+// ✅ Tes Repositories
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
+
 
 // ✅ Géocodage OpenStreetMap
 builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>

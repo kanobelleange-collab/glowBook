@@ -9,8 +9,9 @@ namespace Application.Features.Employees.Commands.CreerEmployee
         public string? Nom { get; set; }
         public  required string Prenom { get; set; }
         public  required string Specialite { get; set; }
-        public string? Photo { get; set; }
+        public string? UrlPhoto { get; set; }
         public int AnneesExperience { get; set; }
+       
        
     }
 }

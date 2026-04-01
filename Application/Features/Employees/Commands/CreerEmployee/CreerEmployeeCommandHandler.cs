@@ -32,9 +32,10 @@ namespace Application.Features.Employees.Commands.CreerEmployee
 
                 command.Prenom,
                 command.Specialite,
-                command.Photo,
+                command.UrlPhoto,
                
                 command.AnneesExperience
+                
             );
 
           // 2. Ajouter la description si présente

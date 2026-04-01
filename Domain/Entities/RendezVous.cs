@@ -10,7 +10,7 @@ namespace Domain.Entities
         public StatutRendezVous Statut { get; private set; }
         public decimal Prix { get; private set; }
         public Guid ClientId { get; private set; }
-        public Guid PraticienId { get; private set; }
+        public Guid EmployeeId { get; private set; }
         public Guid ServiceId { get; private set; }
         public Guid EtablissementId { get; private set; }
         public string? NotesClient { get; private set; }
@@ -18,13 +18,13 @@ namespace Domain.Entities
         public DateTime DateCreation { get; private set; }
 
         public RendezVous(
-            Guid clientId, Guid praticienId, Guid serviceId,
+            Guid clientId, Guid employeeId, Guid serviceId,
             Guid etablissementId, DateTime dateHeure, decimal prix,
             string? notesClient = null)
         {
             Id              = Guid.NewGuid();
             ClientId        = clientId;
-            PraticienId     = praticienId;
+            EmployeeId     = employeeId;
             ServiceId       = serviceId;
             EtablissementId = etablissementId;
             DateHeure       = dateHeure;

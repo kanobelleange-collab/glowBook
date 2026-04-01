@@ -64,12 +64,17 @@ namespace WebAPI.Controllers
 
         // POST: api/Employee
         [HttpPost]
-        public async Task<ActionResult<Guid>> Add([FromBody] CreerEmployeeCommand command)
-        {
-            var id = await _mediator.Send(command);
-            // Retourne un code 201 avec le lien vers le GetById
-            return CreatedAtAction(nameof(GetById), new { id = id }, id);
-        }
+public async Task<ActionResult<EmployeeDto>> Add([FromBody] CreerEmployeeCommand command)
+{
+    var employeeDto = await _mediator.Send(command);
+
+    // Retourne 201 avec lien vers GetById
+    return CreatedAtAction(
+        nameof(GetById),
+        new { id = employeeDto.Id }, // paramètre exact attendu par GetById
+        employeeDto
+    );
+}
 
         // PUT: api/Employee/{id}
         [HttpPut("{id:guid}")]

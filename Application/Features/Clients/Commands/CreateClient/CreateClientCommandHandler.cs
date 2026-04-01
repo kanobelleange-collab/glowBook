@@ -1,33 +1,35 @@
-using System;
-using System.Threading;
-using MediatR;
-using Application.Features.Clients.Interfaces;
+using AutoMapper;
 using Domain.Entities;
+using Application.Features.Clients.Interfaces;
+using MediatR;
 
 namespace Application.Features.Clients.Commands.CreateClient
 {
-    public class CreateClientCommandHandler : IRequestHandler<CreateClientCommand, Guid>
+    public class CreateClientHandler : IRequestHandler<CreateClientCommand, Client>
     {
-        private readonly IClientRepository _clientRepository;
+        private readonly IClientRepository _repository;
+        private readonly IMapper _mapper;
 
-        public CreateClientCommandHandler(IClientRepository clientRepository)
+        public CreateClientHandler(IClientRepository repository, IMapper mapper)
         {
-            _clientRepository = clientRepository;
+            _repository = repository;
+            _mapper = mapper;
         }
 
-        public async Task<Guid> Handle(CreateClientCommand request, CancellationToken cancellationToken)
+        public async Task<Client> Handle(CreateClientCommand request, CancellationToken cancellationToken)
         {
-            // ✅ Valider Telephone et Ville avant de créer le client
-            var client = new Client(
-                request.Nom,
-                request.Email,
-                request.Telephone ?? throw new Exception("Le téléphone est obligatoire."),
-                request.Ville     ?? throw new Exception("La ville est obligatoire."),
-                request.Quartier    ?? throw new Exception("Le quartier  est obligatoire.")
-            );
+            // 1. On mappe le DTO vers l'entité
+            var client = _mapper.Map<Client>(request);
+            
+            // 2. GÉNÉRATION DES DONNÉES MANQUANTES (C'est ici que ça se jouait !)
+            client.Id = Guid.NewGuid();                // Génère un ID unique pour MySQL
+            client.DateInscription = DateTime.Now;     // Date actuelle (Yaoundé/Douala)
+            client.EstActif = true;                    // Par défaut, le client est actif
 
-            await _clientRepository.AddAsync(client);
-            return client.Id;
+            // 3. On envoie l'objet complet au Repository
+            await _repository.AddAsync(client);
+            
+            return client; 
         }
     }
 }
