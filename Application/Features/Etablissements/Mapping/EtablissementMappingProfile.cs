@@ -11,6 +11,8 @@ namespace Application.Features.Etablissements.Mapping
         public EtablissementMappingProfile()
         {
             CreateMap<Etablissement,EtablissementDto>().ReverseMap();
+
+            CreateMap<HoraireOuverture, HoraireOuvertureDto>().ReverseMap();
         }
     }
 

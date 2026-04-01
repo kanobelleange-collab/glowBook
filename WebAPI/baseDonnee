@@ -1,0 +1,125 @@
+-- =============================================
+-- GlowBook Database - MySQL (XAMPP)
+-- =============================================
+
+CREATE DATABASE IF NOT EXISTS glowbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE glowbook;
+
+-- =============================================
+-- Table : Etablissements
+-- =============================================
+CREATE TABLE Etablissements (
+    Id           CHAR(36)       NOT NULL PRIMARY KEY,
+    Nom          VARCHAR(150)   NOT NULL,
+    Adresse      VARCHAR(255)   NOT NULL,
+    Quartier     VARCHAR(100)   NOT NULL DEFAULT '',
+    Ville        VARCHAR(100)   NOT NULL,
+    Telephone    VARCHAR(20)    NOT NULL,
+    Email        VARCHAR(150)   NOT NULL,
+    Description  TEXT           NULL,
+    Note         DOUBLE         NOT NULL DEFAULT 0,
+    NoteMoyenne  DOUBLE         NOT NULL DEFAULT 0,
+    EstActif     TINYINT(1)     NOT NULL DEFAULT 1,
+    DateCreation DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Latitude     DOUBLE         NOT NULL DEFAULT 0,
+    Longitude    DOUBLE         NOT NULL DEFAULT 0
+  
+ DateModification DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+);
+
+-- =============================================
+-- Table : Photos
+-- =============================================
+CREATE TABLE Photos (
+    Id              CHAR(36)     NOT NULL PRIMARY KEY,
+    EtablissementId CHAR(36)     NOT NULL,
+    UrlPhoto        VARCHAR(500) NOT NULL,
+    CONSTRAINT FK_Photos_Etablissement
+        FOREIGN KEY (EtablissementId)
+        REFERENCES Etablissements(Id)
+        ON DELETE CASCADE
+);
+
+-- =============================================
+-- Table : HorairesOuverture
+-- =============================================
+CREATE TABLE HorairesOuverture (
+    Id              CHAR(36)    NOT NULL PRIMARY KEY,
+    EtablissementId CHAR(36)    NOT NULL,
+    Jour            TINYINT     NOT NULL,   -- 0=Dimanche ... 6=Samedi (DayOfWeek)
+    HeureOuverture  TIME        NOT NULL,
+    HeureFermeture  TIME        NOT NULL,
+    EstFerme        TINYINT(1)  NOT NULL DEFAULT 0,
+    CONSTRAINT FK_Horaires_Etablissement
+        FOREIGN KEY (EtablissementId)
+        REFERENCES Etablissements(Id)
+        ON DELETE CASCADE
+);
+
+-- =============================================
+-- Table : EtablissementServices
+-- =============================================
+CREATE TABLE EtablissementServices (
+    Id              CHAR(36)    NOT NULL PRIMARY KEY,
+    EtablissementId CHAR(36)    NOT NULL,
+    TypeServiceNom  VARCHAR(50) NOT NULL,   -- "SalonCoiffure", "SalonMassage", etc.
+
+    -- Propriétés SalonCoiffure
+    SpecialitesTresse   JSON        NULL,   -- ["BoxBraid","Locks","Tissage"]
+    TypesCheveux        JSON        NULL,   -- ["Naturels","Défrisés"]
+    AccepteHommes       TINYINT(1)  NULL DEFAULT 0,
+    AccepteEnfants      TINYINT(1)  NULL DEFAULT 0,
+
+    -- Propriétés SalonMassage
+    TypesMassage           JSON        NULL,   -- ["Suédois","Thaï"]
+    Ambiance               VARCHAR(50) NULL,
+    DisponibleADomicile    TINYINT(1)  NULL DEFAULT 0,
+    DureeMinimaleMinutes   INT         NULL DEFAULT 30,
+
+    -- Propriétés CabinetEsthetique
+    ProposeSoinsVisage  TINYINT(1) NULL DEFAULT 0,
+    ProposeEpilation    TINYINT(1) NULL DEFAULT 0,
+    ProposeOnglerie     TINYINT(1) NULL DEFAULT 0,
+    ProposeMaquillage   TINYINT(1) NULL DEFAULT 0,
+
+    -- Propriétés CabinetProthetiste
+    ProposeProtheseOngles      TINYINT(1) NULL DEFAULT 0,
+    ProposeExtensionCils       TINYINT(1) NULL DEFAULT 0,
+    ProposeProtheseCapillaire  TINYINT(1) NULL DEFAULT 0,
+
+    -- Propriétés SpaBeaute
+    ServicesSpaNom  VARCHAR(100) NULL,   -- "Hammam", "Sauna", "Jacuzzi"
+
+    CONSTRAINT FK_Services_Etablissement
+        FOREIGN KEY (EtablissementId)
+        REFERENCES Etablissements(Id)
+        ON DELETE CASCADE,
+
+    UNIQUE KEY UQ_Service_Type (EtablissementId, TypeServiceNom)
+);
+
+-- =============================================
+-- Table : Prestations
+-- =============================================
+CREATE TABLE Prestations (
+    Id           CHAR(36)       NOT NULL PRIMARY KEY,
+    ServiceId    CHAR(36)       NOT NULL,
+    Nom          VARCHAR(150)   NOT NULL,
+    Description  TEXT           NULL,
+    Prix         DECIMAL(10,2)  NOT NULL DEFAULT 0,
+    DureeMinutes INT            NOT NULL DEFAULT 0,
+    CONSTRAINT FK_Prestations_Service
+        FOREIGN KEY (ServiceId)
+        REFERENCES EtablissementServices(Id)
+        ON DELETE CASCADE
+);
+
+-- =============================================
+-- Index pour les recherches
+-- =============================================
+CREATE INDEX IX_Etablissements_Ville      ON Etablissements(Ville);
+CREATE INDEX IX_Etablissements_EstActif   ON Etablissements(EstActif);
+CREATE INDEX IX_Etablissements_Note       ON Etablissements(NoteMoyenne DESC);
+CREATE INDEX IX_Etablissements_Geo        ON Etablissements(Latitude, Longitude);
+CREATE INDEX IX_Services_TypeServiceNom   ON EtablissementServices(TypeServiceNom);
+CREATE INDEX IX_Prestations_ServiceId     ON Prestations(ServiceId);

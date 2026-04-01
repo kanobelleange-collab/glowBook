@@ -42,39 +42,52 @@ namespace Infrastructure.Repositories
         }
 
         // 4. Ajouter un nouveau client
-        public async Task<Client?> AddAsync(Client client)
-        {
-            using var connection = _context.CreateConnection();
-            const string sql = @"
-                INSERT INTO Clients (Nom, Email, Telephone, Quartier, Ville, DateInscription, EstActif)
-                VALUES (@Nom, @Email, @Telephone, @Quartier, @Ville, @DateInscription, @EstActif);
-                SELECT LAST_INSERT_ID();";
+        // 4. Ajouter un nouveau client
+public async Task<Client?> AddAsync(Client client)
+{
+    using var connection = _context.CreateConnection();
+    
+    // Correction 1 : On ajoute explicitement 'Id' dans les colonnes et les valeurs
+    const string sql = @"
+        INSERT INTO Clients (Id, Nom, Email, Telephone, Quartier, Ville, DateInscription, EstActif)
+        VALUES (@Id, @Nom, @Email, @Telephone, @Quartier, @Ville, @DateInscription, @EstActif)";
 
-            // On récupère l'ID généré par MySQL pour mettre à jour l'objet client en mémoire
-            var clients = await connection.ExecuteScalarAsync<Client?>(sql, client);
-            return clients;
-            
-            // Note : Comme ton Id est 'private set', assure-toi que Dapper peut y accéder 
-            // ou utilise une méthode de l'entité pour le définir si nécessaire.
-        }
+    // Correction 2 : On utilise ExecuteAsync (Scalar n'est pas nécessaire pour un Guid généré en C#)
+    await connection.ExecuteAsync(sql, client);
+    
+    return client;
+}
+    
 
         // 5. Mettre à jour un client
         public async Task<ClientDto?> UpdateAsync(Client client)
-        {
-            using var connection = _context.CreateConnection();
-            const string sql = @"
-                UPDATE Clients 
-                SET Nom = @Nom, 
-                    Email = @Email, 
-                    Telephone = @Telephone, 
-                    Quartier = @Quartier, 
-                    Ville = @Ville, 
-                    EstActif = @EstActif 
-                WHERE Id = @Id";
+{
+    using var connection = _context.CreateConnection();
+    const string sql = @"
+        UPDATE Clients 
+        SET Nom = @Nom, 
+            Prenom = @Prenom,
+            Email = @Email, 
+            Telephone = @Telephone, 
+            Quartier = @Quartier, 
+            Ville = @Ville, 
+            EstActif = @EstActif 
+        WHERE Id = @Id"; // <-- Pas de virgule avant le WHERE !
 
-            return await connection.QueryFirstOrDefaultAsync<ClientDto?>(sql, client);
-            
-        }
+    // Pour un UPDATE, on utilise ExecuteAsync, pas QueryFirstOrDefault
+    await connection.ExecuteAsync(sql, client);
+
+    // On retourne le client mis à jour (mappé en DTO)
+    return new ClientDto 
+    {  
+        Nom = client.Nom, 
+        Email = client.Email,
+        Telephone = client.Telephone,
+        Quartier = client.Quartier,
+        Ville = client.Ville,
+        EstActif = client.EstActif
+    };
+}
 
         // 6. Supprimer un client (ID en int pour la cohérence)
         public async Task<Guid> DeleteAsync(Guid id) 

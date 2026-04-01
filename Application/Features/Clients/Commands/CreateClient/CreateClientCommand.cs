@@ -10,5 +10,7 @@ namespace Application.Features.Clients.Commands.CreateClient
         public string Telephone { get; set; } = string.Empty;
         public string Ville { get; set; } = string.Empty;
         public string Quartier { get; set; } = string.Empty;
+        public DateTime DateInscription { get; set; }
+        public bool EstActif { get; set; }
     }
 }

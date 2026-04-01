@@ -18,7 +18,7 @@ namespace Application.Features.Etablissements.DTOs
         public List<string>? Photos { get; set; } // URLs des photos "SalonCoiffure", "CabinetProthetiste", "SalonMassage", "SpaBeaute"
         public List<HoraireOuvertureDto>? Horaires { get; set; } //
    
-        public required string TypeEtablissement { get; set; }
+        
         public double? DistanceKm { get; set; } // "SalonCoiffure", "CabinetProthetiste", "SalonMassage", "SpaBeaute"
     }
 }
