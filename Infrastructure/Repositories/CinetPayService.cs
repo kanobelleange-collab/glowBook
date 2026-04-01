@@ -14,12 +14,14 @@ namespace Infrastructure.Repositories
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _siteId;
+        private readonly string _notify_url;
 
         public CinetPayService(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
             _apiKey = config["CinetPay:ApiKey"] ?? throw new ArgumentNullException(nameof(config));
             _siteId = config["CinetPay:SiteId"] ?? throw new ArgumentNullException(nameof(config));
+            _notify_url = config["CinetPay:NotifyUrl"]?? throw new ArgumentNullException(nameof(config));
         }
 
         public async Task<string> CreerSessionPaiementAsync(
@@ -44,6 +46,14 @@ namespace Infrastructure.Repositories
 
             try
             {
+                // Au lieu du ternaire, utilise une logique plus souple
+var channels = methodePaiement.ToUpper() switch
+{
+    "ORANGEMONEY" => "MOBILE_MONEY",
+    "MTNMOMO" => "MOBILE_MONEY",
+    "CARD" => "CREDIT_CARD",
+    _ => "ALL" // Permet au client de choisir sur l'interface CinetPay
+};
                 var response = await _httpClient.PostAsJsonAsync(
                     "https://api-checkout.cinetpay.com/v2/payment", body);
 

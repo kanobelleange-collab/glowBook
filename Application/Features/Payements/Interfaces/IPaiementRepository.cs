@@ -22,10 +22,10 @@ namespace Application.Features.Payements.Interfaces
         Task<List<Paiement>> GetByStatutAsync(StatutPaiement statut);
 
         // Ajouter un nouveau paiement
-        Task AjouterAsync(Paiement paiement);
+        Task AddAsync(Paiement paiement);
 
         // Mettre à jour un paiement existant
-        Task MettreAJourAsync(Paiement paiement);
+        Task UpdateAsync(Paiement paiement);
         
     }
 }

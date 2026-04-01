@@ -3,68 +3,48 @@ using Application.Features.Payements.Interfaces;
 using Domain.Entities;
 using Application.Features.Rendevou.Interfaces;
 using  Domain.Enum;
+using Application.Features.Payements.DTOs;
+using Application.Features.Paiements.Commands.InitialiserPaiement;
 
-namespace Application.Features.Payements.Commands
+public class InitialiserPaiementHandler : IRequestHandler<InitialiserPaiementCommand, PaiementResponseDto>
 {
-    // IRequestHandler<Command, TypeRetour>
-    public class InitierPaiementCommandHandler
-        : IRequestHandler<InitierPaiementCommand, string>
+    private readonly IPaiementRepository _repository; // Pour la base de données
+    private readonly IPaymentService _paymentService; // Pour l'API CinetPay
+
+    public InitialiserPaiementHandler(IPaiementRepository repository, IPaymentService paymentService)
     {
-        private readonly IPaymentService _paymentService;
-        private readonly IPaiementRepository _paiementRepository;
-        private readonly IRendezVousRepository _rdvRepository;
+        _repository = repository;
+        _paymentService = paymentService;
+    }
 
-        public InitierPaiementCommandHandler(
-            IPaymentService paymentService,
-            IPaiementRepository paiementRepository,
-            IRendezVousRepository rdvRepository)
-        {
-            _paymentService     = paymentService;
-            _paiementRepository = paiementRepository;
-            _rdvRepository      = rdvRepository;
-        }
+    public async Task<PaiementResponseDto> Handle(InitialiserPaiementCommand request, CancellationToken cancellationToken)
+    {
+        // 1. Créer l'entité (statut "EnAttente")
+        var paiement = new Paiement(
+            request.RendezVousId, 
+            request.ClientId, 
+            request.Montant, 
+            request.MethodePaiement);
 
-        // MediatR appelle automatiquement Handle()
-        public async Task<string> Handle(
-            InitierPaiementCommand command,
-            CancellationToken cancellationToken)
-        {
-            // 1. Vérifier que le RDV existe
-            var rdv = await _rdvRepository.GetByIdAsync(command.RendezVousId);
-            if (rdv is null)
-                throw new Exception("Rendez-vous introuvable.");
+        // 2. APPEL AU SERVICE EXTERNE : IPaymentService
+        // On demande à CinetPay de nous générer une session de paiement
+        var lienPaiement = await _paymentService.CreerSessionPaiementAsync(
+            paiement.RendezVousId,
+            paiement.Montant,
+            paiement.MethodePaiement,
+            "https://glowbook.cm/succes", // Tes URLs de retour
+            "https://glowbook.cm/echec"
+        );
 
-            // 2. Vérifier qu'il n'est pas déjà payé
-            var paiementExistant = await _paiementRepository
-                .GetByRendezVousIdAsync(command.RendezVousId);
+        // 3. On stocke le lien dans l'entité
+        paiement.DefinirLienPaiement(lienPaiement);
 
-            if (paiementExistant != null
-                && paiementExistant.Statut == StatutPaiement.Confirme)
-                throw new Exception("Ce rendez-vous est déjà payé.");
+        // 4. SAUVEGARDE EN BASE : IPaiementRepository
+        await _repository.AddAsync(paiement);
 
-            // 3. Créer le paiement en base (statut EnAttente)
-            var paiement = new Paiement(
-                command.RendezVousId,
-                command.ClientId,
-                command.Montant,
-                command.MethodePaiement
-            );
-            await _paiementRepository.AjouterAsync(paiement);
-
-            // 4. Appeler CinetPay pour obtenir le lien
-            string lienPaiement = await _paymentService.CreerSessionPaiementAsync(
-                command.RendezVousId,
-                command.Montant,
-                command.MethodePaiement,
-                command.UrlRetourSucces,
-                command.UrlRetourEchec
-            );
-
-            // 5. Sauvegarder le lien
-            paiement.DefinirLienPaiement(lienPaiement);
-            await _paiementRepository.MettreAJourAsync(paiement);
-
-            return lienPaiement;
-        }
+        return new PaiementResponseDto { 
+            PaiementId = paiement.Id, 
+            LienPaiement = lienPaiement 
+        };
     }
 }

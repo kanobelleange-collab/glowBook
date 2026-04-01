@@ -2,11 +2,14 @@ using Application.Common.Interfaces;
 using Application.Features.Etablissements.Commands.CreateEtablissement;
 using Application.Features.Etablissements.Interfaces;
 using Application.Features.Rendevou.Interfaces;
+using Application.Features.Notifications.Interfaces;
 using Application.Features.Clients.Interfaces;
 using Infrastructure.DBcontext;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.OpenApi.Models;
+using Application.Features.Aviss.Interfaces;
+using Application.Features.Paiements.Commands.InitialiserPaiement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +81,10 @@ builder.Services.AddScoped<IApplicationDbContext>(provider =>
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
+// Dans ton Program.cs, avec les autres services
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAvisRepository, AvisRepository>();
+
 
 // ✅ Géocodage OpenStreetMap
 builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>
@@ -91,6 +98,7 @@ builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(
         typeof(CreateEtablissementHandler).Assembly));
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(InitialiserPaiementCommand).Assembly));
 
 // ✅ AutoMapper
 builder.Services.AddAutoMapper(

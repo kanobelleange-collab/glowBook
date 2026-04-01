@@ -21,9 +21,9 @@ namespace Application.Features.Aviss.Interfaces
         Task<double> CalculerNoteMoyenneAsync(Guid etablissementId);
 
         // Ajouter un avis
-        Task AjouterAsync(Avis avis);
+        Task AddAsync(Avis avis);
 
         // Mettre à jour un avis (réponse du salon, masquer...)
-        Task MettreAJourAsync(Avis avis);
+        Task UpdateAsync(Avis avis);
     }
 }
