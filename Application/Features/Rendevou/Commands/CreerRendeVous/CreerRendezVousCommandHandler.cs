@@ -1,7 +1,7 @@
 using MediatR;
 using Application.Features.Rendevou.Interfaces;
 using Application.Features.Employees.Interfaces;
-using Application.Features.ServiceEsthtiques.Interfaces;
+// using Application.Features.ServiceEsthtiques.Interfaces;
 using Application.Features.Notifications.Interfaces;
 using Application.Features.Rendevou.DTOs;
 using Domain.Entities;
@@ -17,13 +17,13 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
     {
         private readonly IRendezVousRepository _rdvRepository;
         private readonly IEmployeeRepository _EmployeeRepository;
-        private readonly IServiceEsthetiqueRepository _serviceRepository;
+        // private readonly IServiceEsthetiqueRepository _serviceRepository;
         private readonly INotificationService _notificationService;
 
         public CreerRendezVousCommandHandler(
             IRendezVousRepository rdvRepository,
             IEmployeeRepository employeeRepository,
-            IServiceEsthetiqueRepository serviceRepository,
+            // IServiceEsthetiqueRepository serviceRepository,
             INotificationService notificationService)
         {
             _rdvRepository       = rdvRepository;
