@@ -10,6 +10,8 @@ using Infrastructure.Services;
 using Microsoft.OpenApi.Models;
 using Application.Features.Aviss.Interfaces;
 using Application.Features.Paiements.Commands.InitialiserPaiement;
+using Application.Features.Employees.Interfaces;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,11 +81,13 @@ builder.Services.AddScoped<IApplicationDbContext>(provider =>
 
 // ✅ Tes Repositories
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
 // Dans ton Program.cs, avec les autres services
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAvisRepository, AvisRepository>();
+
 
 
 // ✅ Géocodage OpenStreetMap

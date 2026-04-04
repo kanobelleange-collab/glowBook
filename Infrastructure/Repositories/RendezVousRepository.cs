@@ -103,8 +103,8 @@ namespace Infrastructure.Repositories
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
-                INSERT INTO RendezVous (Id, DateHeure, Statut, Prix, ClientId, PraticienId, ServiceId, EtablissementId, NotesClient, DateCreation)
-                VALUES (@Id, @DateHeure, @Statut, @Prix, @ClientId, @PraticienId, @ServiceId, @EtablissementId, @NotesClient, @DateCreation)";
+                INSERT INTO RendezVous (Id, DateHeure, Statut, Prix, ClientId, PraticienId, ServiceId, EtablissementId)
+                VALUES (@Id, @DateHeure, @Statut, @Prix, @ClientId, @PraticienId, @ServiceId, @EtablissementId)";
             
             await connection.ExecuteAsync(sql, rdv);
         }
@@ -117,7 +117,6 @@ namespace Infrastructure.Repositories
                 UPDATE RendezVous 
                 SET Statut = @Statut, 
                     RaisonAnnulation = @RaisonAnnulation,
-                    NotesClient = @NotesClient
                 WHERE Id = @Id";
             
             await connection.ExecuteAsync(sql, rdv);

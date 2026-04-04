@@ -1,7 +1,8 @@
 using MediatR;
 using Application.Features.Etablissements.DTOs;
 using Domain.Enum;
- 
+using Domain.Entities;
+
 
 
 namespace Application.Features.Etablissements.Commands.CreateEtablissement
@@ -18,5 +19,6 @@ public  record CreateEtablissementCommand : IRequest<EtablissementDto>
     public string Description{get;set;} = string.Empty;
     public List<string>? Photos { get; set; }
     public List<HoraireOuvertureDto>? Horaires { get; set; }
+
 }
 }

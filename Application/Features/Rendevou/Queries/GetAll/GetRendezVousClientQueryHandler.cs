@@ -33,7 +33,7 @@ namespace Application.Features.Rendevou.Queries.GetAll
                 DateHeure       = r.DateHeure,
                 Statut          = r.Statut,
                 Prix            = r.Prix,
-                PraticienId     = r.PraticienId,
+                EmployeeId     = r.EmployeeId,
                 ServiceId       = r.ServiceId,
                 EtablissementId = r.EtablissementId
             }).ToList();

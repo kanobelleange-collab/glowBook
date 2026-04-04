@@ -1,34 +1,34 @@
 using AutoMapper;
 using MediatR;
-using Application.Features.Praticiens.DTOs;
-using Application.Features.Praticiens.Interfaces;
+using Application.Features.Employees.DTOs;
+using Application.Features.Employees.Interfaces;
 using Domain.Entities;
-using Application.Features.Praticiens.Commands.AjoutDisponibilite;
+using Application.Features.Employees.Commands.AjoutDisponibilite;
 
-namespace Application.Features.Praticiens.Commands
+namespace Application.Features.Employees.Commands
 {
     public class AjouterDisponibiliteCommandHandler
-        : IRequestHandler<AjouterDisponibiliteCommand, PraticienDto>
+        : IRequestHandler<AjouterDisponibiliteCommand, EmployeeDto>
     {
-        private readonly IPraticienRepository _praticienRepository;
+        private readonly IEmployeeRepository _EmployeeRepository;
         private readonly IMapper _mapper;
 
         public AjouterDisponibiliteCommandHandler(
-            IPraticienRepository praticienRepository,
+            IEmployeeRepository employeeRepository,
             IMapper mapper)
         {
-            _praticienRepository = praticienRepository;
+            _EmployeeRepository = employeeRepository;
             _mapper              = mapper;
         }
 
-        public async Task<PraticienDto> Handle(
+        public async Task<EmployeeDto> Handle(
             AjouterDisponibiliteCommand command,
             CancellationToken cancellationToken)
         {
             // 1. Récupérer le praticien
-            var praticien = await _praticienRepository.GetByIdAsync(command.PraticienId);
-            if (praticien == null)
-                throw new Exception($"Praticien avec l'Id {command.PraticienId} introuvable.");
+            var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId);
+            if (employee == null)
+                throw new Exception($"Employee avec l'Id {command.EmployeeId} introuvable.");
 
             // 2. Convertir les strings en types appropriés
             var jour      = Enum.Parse<DayOfWeek>(command.Jour, ignoreCase: true);
@@ -37,13 +37,13 @@ namespace Application.Features.Praticiens.Commands
 
             // 3. Créer et ajouter la disponibilité
             var disponibilite = new Disponibilite(jour, heureDebut, heureFin);
-            praticien.AjouterDisponibilite(disponibilite);
+            employee.AjouterDisponibilite(disponibilite);
 
             // 4. Sauvegarder
-            await _praticienRepository.MettreAJourAsync(praticien);
+            await _EmployeeRepository.UpdateAsync(employee);
 
             // 5. Retourner le DTO mis à jour
-            return _mapper.Map<PraticienDto>(praticien);
+            return _mapper.Map<EmployeeDto>(employee);
         }
     }
 }

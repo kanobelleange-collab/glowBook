@@ -37,5 +37,8 @@ namespace Application.Features.Etablissements.Interfaces
     Task AddPrestationAsync(Prestation prestation);
     Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId);
     Task DeleteServiceAsync(Guid serviceId);
+
+   
+    Task<List<Employee>> GetEmployeesByEtablissementIdAsync(Guid etablissementId);
     }
 }

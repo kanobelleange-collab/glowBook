@@ -1,20 +1,20 @@
 using System;
-using Application.Features.Praticiens.DTOs;
+using Application.Features.Employees.DTOs;
 
-namespace Application.Features.Praticiens.DTOs
+namespace Application.Features.Employees.DTOs
 {
-    public class PraticienDto
+    public class EmployeeDto
     {
         public Guid Id { get; set; }
+        public Guid EtablissementId { get; set; }
         public string? Nom { get; set; }
         public  required string Prenom { get; set; }
-        public  required string NomComplet { get; set; }
         public  required string Specialite { get; set; }
-        public string? Photo { get; set; }
-        public string? Description { get; set; }
+        public string? UrlPhoto { get; set; }
+        public string DateCreation{get;set;}=string.Empty;
         public int AnneesExperience { get; set; }
         public double NoteMoyenne { get; set; }
-        public Guid EtablissementId { get; set; }
+        
         public List<DisponibiliteDto>? Disponibilites { get; set; }
     }
 }
