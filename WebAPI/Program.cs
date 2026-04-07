@@ -11,6 +11,8 @@ using Microsoft.OpenApi.Models;
 using Application.Features.Aviss.Interfaces;
 using Application.Features.Paiements.Commands.InitialiserPaiement;
 using Application.Features.Employees.Interfaces;
+using Application.Features.Prestations.Interfaces;
+using ZstdSharp.Unsafe;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,6 +89,8 @@ builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
 // Dans ton Program.cs, avec les autres services
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAvisRepository, AvisRepository>();
+builder.Services.AddScoped<IPrestationRepository, PrestationRepository>();
+
 
 
 
