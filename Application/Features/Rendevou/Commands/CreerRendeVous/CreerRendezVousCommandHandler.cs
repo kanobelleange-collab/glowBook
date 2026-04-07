@@ -1,7 +1,7 @@
 using MediatR;
 using Application.Features.Rendevou.Interfaces;
 using Application.Features.Employees.Interfaces;
-// using Application.Features.ServiceEsthtiques.Interfaces;
+using Application.Features.Prestations.Interfaces;
 using Application.Features.Notifications.Interfaces;
 using Application.Features.Rendevou.DTOs;
 using Domain.Entities;
@@ -17,18 +17,18 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
     {
         private readonly IRendezVousRepository _rdvRepository;
         private readonly IEmployeeRepository _EmployeeRepository;
-        // private readonly IServiceEsthetiqueRepository _serviceRepository;
+        private readonly IPrestationRepository _prestationRepository;
         private readonly INotificationService _notificationService;
 
         public CreerRendezVousCommandHandler(
             IRendezVousRepository rdvRepository,
             IEmployeeRepository employeeRepository,
-            // IServiceEsthetiqueRepository serviceRepository,
+            IPrestationRepository prestationRepository,
             INotificationService notificationService)
         {
             _rdvRepository       = rdvRepository;
             _EmployeeRepository = employeeRepository;
-            _serviceRepository   = serviceRepository;
+            _prestationRepository   = prestationRepository;
             _notificationService = notificationService;
         }
 
@@ -44,7 +44,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             if (occupe)
                 throw new Exception("Ce créneau est déjà occupé.");
 
-            var service = await _serviceRepository.GetByIdAsync(command.ServiceId)
+            var service = await _prestationRepository.GetByIdAsync(command.ServiceId)
                 ?? throw new Exception("Service introuvable.");
 
             var rdv = new RdvEntity(
