@@ -25,7 +25,7 @@ namespace Application.Features.Prestations.Commands.UpdatePrestation
             prestation.Nom         = request.Nom;
             prestation.Description = request.Description;
             prestation.Prix        = request.Prix;
-            prestation.ServiceId   = request.ServiceId;
+            // prestation.ServiceId   = request.ServiceId;
             prestation.DureeMinutes=request.DureeMinutes;
 
             await _repository.UpdateAsync(prestation);

@@ -8,6 +8,7 @@ namespace Domain.Entities
         public string Nom { get; private set; }
         public string Adresse { get; private set; }
         public string Quartier { get; private set; }
+        public CategorieEtablissement Categorie { get; set; } // ✅ enum
         public string Ville { get; private set; }
         public string Telephone { get; private set; }
         public string Email { get; private set; }
@@ -26,6 +27,7 @@ namespace Domain.Entities
         public Etablissement(
             string nom,
             string adresse,
+            CategorieEtablissement categorie,
             string ville,
             string telephone,
             string email,
@@ -35,6 +37,7 @@ namespace Domain.Entities
             Nom          = nom;
             Adresse      = adresse;
             Quartier     = string.Empty;
+            Categorie    =categorie;
             Ville        = ville;
             Telephone    = telephone;
             Email        = email;
@@ -55,6 +58,7 @@ namespace Domain.Entities
             Nom       = string.Empty;
             Adresse   = string.Empty;
             Quartier  = string.Empty;
+            Categorie =default;
             Ville     = string.Empty;
             Telephone = string.Empty;
             Email     = string.Empty;

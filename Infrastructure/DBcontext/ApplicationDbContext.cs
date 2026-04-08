@@ -34,6 +34,7 @@ namespace Infrastructure.DBcontext
     Nom              VARCHAR(150)  NOT NULL,
     Adresse          VARCHAR(255)  NOT NULL,
     Quartier         VARCHAR(100)  NOT NULL DEFAULT '',
+    
     Ville            VARCHAR(100)  NOT NULL,
     Telephone        VARCHAR(20)   NOT NULL,
     Email            VARCHAR(150)  NOT NULL,

@@ -11,6 +11,6 @@ namespace Application.Features.Etablissements.Commands.AddServices.SalonMassage
         public string? Ambiance { get; set; }
         public bool DisponibleADomicile { get; set; } = false;
         public int DureeMinimaleEnMinutes { get; set; } = 30;
-        public List<PrestationDto> Prestations { get; set; } = new();
+        // public List<PrestationEtablissementsDto> Prestations { get; set; } = new();
     }
 }

@@ -5,8 +5,8 @@ namespace Application.Features.Prestations.DTOs
 {
     public class PrestationDto
     {
-        public Guid Id { get; set; }
         public Guid ServiceId { get; set; }
+        public Guid Id { get; set; }
         public string Nom { get; set; } = string.Empty;
         public string? Description { get; set; }
         public decimal Prix { get; set; }

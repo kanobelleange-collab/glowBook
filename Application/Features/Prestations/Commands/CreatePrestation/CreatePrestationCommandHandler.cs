@@ -8,7 +8,7 @@ using  Application.Features.Prestations.Interfaces;
 using Application.Features.Prestations.Commands.CreatePrestation;
 
 
-namespace Appliccation.Features.Prestations.Commands.CreatePrestation
+namespace Application.Features.Prestations.Commands.CreatePrestation
 {
     
 

@@ -13,6 +13,6 @@ namespace Application.Features.Etablissements.Commands.AddServices.CabinetEsthet
         public bool ProposeMaquillage { get; set; }
         public List<string> TechniquesEpilation { get; set; } = new();
         public List<string> TypesSoinsVisage { get; set; } = new();
-        public List<PrestationDto> Prestations { get; set; } = new();
+        // public List<PrestationEtablissementsDto> Prestations { get; set; } = new();
     }
 }

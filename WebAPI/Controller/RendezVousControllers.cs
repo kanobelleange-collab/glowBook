@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Application.Features.Rendevou.Commands.CreerRendeVous;
 using Application.Features.Rendevou.Commands.AnnulerRendeVous;
 using Application.Features.Rendevou.Queries.GetByClient;
-using Application.Features.Rendevou.GetRendezVousByPraticien;
-using Application.Features.Rendevou.Queries.GetByPraticienDate;
+using Application.Features.Rendevou.GetRendezVousByEmployer;
+using Application.Features.Rendevou.Queries.GetByEmployeeDate;
 
 namespace WebApi.Controllers
 {
@@ -48,7 +48,7 @@ namespace WebApi.Controllers
         [HttpGet("praticien/{praticienId:guid}")]
         public async Task<IActionResult> GetByPraticien(Guid praticienId)
         {
-            var query = new GetRendezVousByPraticienQuery(praticienId);
+            var query = new GetRendezVousByEmployeeQuery(praticienId);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
@@ -57,7 +57,7 @@ namespace WebApi.Controllers
         [HttpGet("agenda/{praticienId:guid}/{date:datetime}")]
         public async Task<IActionResult> GetAgenda(Guid praticienId, DateTime date)
         {
-            var query = new GetRendezVousByPraticienDateQuery(praticienId, date);
+            var query = new GetRendezVousByEmployeeDateQuery(praticienId, date);
             var result = await _mediator.Send(query);
             return Ok(result);
         }

@@ -15,6 +15,6 @@ namespace Application.Features.Etablissements.Commands.AddServices.SalonCoiffure
         public List<string> TypesCheveux { get; set; } = new();
         public bool AccepteHommes { get; set; } = false;
         public bool AccepteEnfants { get; set; } = false;
-        public List<PrestationDto> Prestations { get; set; } = new();
+        // public List<PrestationEtablissementsDto> Prestations { get; set; } = new();
     }
 }

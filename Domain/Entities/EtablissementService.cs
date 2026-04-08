@@ -6,11 +6,16 @@ namespace Domain.Entities
 {
     public class EtablissementService
     {
-        public Guid Id { get; private set; }
-        public Guid EtablissementId { get; private set; }
-        public string TypeServiceNom { get; private set; }
-        public List<Prestation> Prestations { get; private set; }
-        public List<Employee> Employees { get; private set; } // ✅ Liste des employés du service
+        public Guid Id { get; set; }
+        public Guid EtablissementId { get; set; }
+        public string TypeServiceNom { get; set; }
+        public List<string> SpecialitesTresse { get; set; } = new();
+        public List<string> TypesCheveux { get; set; } = new();
+        public bool AccepteHommes{get;set;}=true;
+        public bool AccepteEnfants{get;set;}=true;
+        public string Data { get; set; } = "{}";
+        public List<Prestation> Prestations { get; set; }
+        public List<Employee> Employees { get; set; } // ✅ Liste des employés du service
 
         public EtablissementService(Guid etablissementId, string typeServiceNom)
         {

@@ -11,6 +11,10 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
         public Guid EmployeeId { get; set; }
         public Guid ServiceId { get; set; }
         public Guid EtablissementId { get; set; }
-        public DateTime DateHeure { get; set; }
+         public DateTime DateHeure { get;  set; }
+        public StatutRendezVous Statut { get; set; }
+        public decimal Prix { get; set; }
+        public string? NotesClient { get; private set; }
+        public string? RaisonAnnulation { get; private set; }
     }
 }

@@ -12,6 +12,6 @@ namespace Application.Features.Etablissements.Commands.AddServices.CabinetProthe
         public bool ProposeProtheseCapillaire { get; set; }
         public List<string> MatieresOngles { get; set; } = new();
         public List<string> StylesCils { get; set; } = new();
-        public List<PrestationDto> Prestations { get; set; } = new();
+        // public List<PrestationEtablissementsDto> Prestations { get; set; } = new();
     }
 }

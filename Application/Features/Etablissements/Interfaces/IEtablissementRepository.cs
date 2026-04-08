@@ -34,7 +34,7 @@ namespace Application.Features.Etablissements.Interfaces
         Task DeleteAsync(Guid id);
          // Services
     Task AddServiceAsync(EtablissementService service);
-    
+    // Task AddPrestationAsync(Prestation prestat
     Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId);
     Task DeleteServiceAsync(Guid serviceId);
 

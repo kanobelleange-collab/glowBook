@@ -13,6 +13,7 @@ public  record CreateEtablissementCommand : IRequest<EtablissementDto>
     public  string Nom { get; set; } = string.Empty;
     public string Adresse { get; set; } = string.Empty;
     public string Quartier { get; set; } = string.Empty;
+    public CategorieEtablissement Categorie { get; set; } // ✅ enum
     public  string Ville { get; set; } = string.Empty;
     public  string Telephone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;

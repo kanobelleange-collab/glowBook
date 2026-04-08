@@ -32,6 +32,7 @@ namespace Application.Features.Etablissements.Commands.CreateEtablissement
             var etablissement = new Etablissement(
                 request.Nom,
                 request.Adresse,
+                request.Categorie ,
                 request.Ville,
                 request.Telephone,
                 request.Email,
