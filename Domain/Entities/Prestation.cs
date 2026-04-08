@@ -4,12 +4,12 @@
 {
         public class Prestation
     {
-        public Guid Id { get; private set; }
-        public Guid ServiceId { get; private set; }
-        public string Nom { get; private set; }
-        public string? Description { get; private set; }
-        public decimal Prix { get; private set; }
-        public int DureeMinutes { get; private set; }
+        public Guid Id { get;  set; }
+        public Guid ServiceId { get; set; }
+        public string Nom { get; set; }
+        public string? Description { get; set; }
+        public decimal Prix { get;  set; }
+        public int DureeMinutes { get;  set; }
 
         public Prestation(
             Guid serviceId,

@@ -17,13 +17,24 @@ namespace Application.Features.Etablissements.Commands.AddServices.SalonMassage
                 ?? throw new Exception("Établissement introuvable.");
 
             var service = new EtablissementService(etablissement.Id, "SalonMassage");
+    var specificData = new 
+    {
+        request.TypesMassage,
+        request.Ambiance,
+        request.DisponibleADomicile,
+        request.DureeMinimaleEnMinutes
+    };
 
-            foreach (var p in request.Prestations)
-                service.AjouterPrestation(new Prestation(
-                    service.Id, p.Nom, p.Prix, p.DureeMinutes, p.Description));
+    // On transforme cet objet en texte JSON pour la colonne 'Data' de la base
+    service.Data = System.Text.Json.JsonSerializer.Serialize(specificData);
+    // -------------------------------
 
-            etablissement.AjouterService(service);
-            await _repository.UpdateAsync(etablissement);
+            // foreach (var p in request.Prestations)
+            //     service.AjouterPrestation(new Prestation(
+            //         service.Id, p.Nom, p.Prix, p.DureeMinutes, p.Description));
+
+             await _repository.AddServiceAsync(service); 
+             await _repository.UpdateAsync(etablissement);
 
             return service.Id;
         }

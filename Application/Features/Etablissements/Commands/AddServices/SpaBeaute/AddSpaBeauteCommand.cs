@@ -12,6 +12,6 @@ namespace Application.Features.Etablissements.Commands.AddServices.SpaBeaute
         public List<string> SoinsCorps { get; set; } = new();
         public List<string> Rituels { get; set; } = new();
         public int NombresCabinesPrivees { get; set; } = 0;
-        public List<PrestationDto> Prestations { get; set; } = new();
+        // public List<PrestationEtablissementsDto> Prestations { get; set; } = new();
     }
 }

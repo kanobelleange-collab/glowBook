@@ -7,7 +7,7 @@ using Domain.Entities;
 using Application.Common.Interfaces;
 using Application.Features.Etablissements.Interfaces;
 using Application.Features.Etablissements.DTOs;
-
+using System.Text.Json;
 namespace Infrastructure.Repositories
 {
     public class EtablissementRepository : IEtablissementRepository
@@ -218,92 +218,87 @@ namespace Infrastructure.Repositories
 
         // ✅ Recherche par proximité — Categorie remplacé par TypeServiceNom
         public async Task<List<EtablissementDto>> GetProximiteAsync(
-            double latitude,
-            double longitude,
-            double rayonKm = 3,
-            string? typeServiceNom = null)
-        {
-            using var connection = _dbContext.CreateConnection();
+    double latitude,
+    double longitude,
+    double rayonKm = 3,
+    string? typeServiceNom = null)
+{
+    using var connection = _dbContext.CreateConnection();
 
-           var query = @"
-SELECT DISTINCT
-    e.Id, e.Nom, e.Adresse, e.Quartier, e.Ville, e.Telephone,
-    e.Description, e.Note, e.EstActif,
-    e.Latitude, e.Longitude,
-    (6371 * ACOS(
-        COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
-        COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
-        SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
-    )) AS DistanceKm
-FROM Etablissements e
-INNER JOIN EtablissementServices es
-    ON es.EtablissementId = e.Id
-WHERE e.IsDeleted = FALSE
-  AND e.EstActif = TRUE
-  AND e.Latitude != 0
-  AND e.Longitude != 0
-  AND (@Ville IS NULL OR LOWER(e.Ville) = LOWER(@Ville))
-  AND (@Quartier IS NULL OR LOWER(e.Quartier) = LOWER(@Quartier))
-  AND (@TypeServiceNom IS NULL OR es.TypeServiceNom = @TypeServiceNom)
-HAVING DistanceKm <= @RayonKm
-ORDER BY DistanceKm ASC;
-         " + (string.IsNullOrEmpty(typeServiceNom) 
-        ? "" 
-        : " AND LOWER(es.TypeServiceNom) = LOWER(@TypeServiceNom)");
+    // On construit la base de la requête
+    var query = @"
+        SELECT DISTINCT
+            e.Id, e.Nom, e.Adresse, e.Quartier, e.Ville, e.Telephone,
+            e.Description, e.Note, e.EstActif,
+            e.Latitude, e.Longitude,
+            (6371 * ACOS(
+                COS(RADIANS(@Lat)) * COS(RADIANS(e.Latitude)) *
+                COS(RADIANS(e.Longitude) - RADIANS(@Lon)) +
+                SIN(RADIANS(@Lat)) * SIN(RADIANS(e.Latitude))
+            )) AS DistanceKm
+        FROM Etablissements e
+        INNER JOIN EtablissementServices es ON es.EtablissementId = e.Id
+        WHERE e.IsDeleted = FALSE
+          AND e.EstActif = TRUE
+          AND e.Latitude != 0
+          AND e.Longitude != 0";
 
-            var parameters = new DynamicParameters();
-            parameters.Add("Lat",   latitude);
-            parameters.Add("Lon",   longitude);
-            parameters.Add("Rayon", rayonKm);
+    var parameters = new DynamicParameters();
+    parameters.Add("Lat", latitude);
+    parameters.Add("Lon", longitude);
+    parameters.Add("RayonKm", rayonKm); // Corrigé : RayonKm au lieu de Rayon
 
-            if (!string.IsNullOrEmpty(typeServiceNom))
-            {
-                query += " AND es.TypeServiceNom = @TypeServiceNom";
-                parameters.Add("TypeServiceNom", typeServiceNom);
-            }
+    // On ajoute le filtre de service si nécessaire
+    if (!string.IsNullOrEmpty(typeServiceNom))
+    {
+        query += " AND es.TypeServiceNom = @TypeServiceNom";
+        parameters.Add("TypeServiceNom", typeServiceNom);
+    }
 
-            query += " ORDER BY DistanceKm ASC";
+    // On termine avec HAVING et ORDER BY
+    query += " HAVING DistanceKm <= @RayonKm ORDER BY DistanceKm ASC";
 
-            var result = await connection.QueryAsync<EtablissementDto>(query, parameters);
-            return result.ToList();
-        }
+    var result = await connection.QueryAsync<EtablissementDto>(query, parameters);
+    return result.ToList();
+}
 
         public async Task AddServiceAsync(EtablissementService service)
 {
     using var connection = _dbContext.CreateConnection();
     const string query = @"
-        INSERT INTO EtablissementServices 
-        (Id, EtablissementId, TypeServiceNom)
+        INSERT INTO etablissementservices 
+        (Id, EtablissementId, TypeServiceNom, Data)
         VALUES 
-        (@Id, @EtablissementId, @TypeServiceNom)";
+        (@Id, @EtablissementId, @TypeServiceNom, @Data)";
 
     await connection.ExecuteAsync(query, new
     {
-        Id              = service.Id.ToString(),
+        Id = service.Id.ToString(),
         EtablissementId = service.EtablissementId.ToString(),
-        service.TypeServiceNom
+        service.TypeServiceNom,
+        service.Data
     });
 }
 
-public async Task AddPrestationAsync(Prestation prestation)
-{
-    using var connection = _dbContext.CreateConnection();
-    const string query = @"
-        INSERT INTO Prestations 
-        (Id, ServiceId, Nom, Description, Prix, DureeMinutes)
-        VALUES 
-        (@Id, @ServiceId, @Nom, @Description, @Prix, @DureeMinutes)";
+// public async Task AddPrestationAsync(Prestation prestation)
+// {
+//     using var connection = _dbContext.CreateConnection();
+//     const string query = @"
+//         INSERT INTO Prestations 
+//         (Id, ServiceId, Nom, Description, Prix, DureeMinutes)
+//         VALUES 
+//         (@Id, @ServiceId, @Nom, @Description, @Prix, @DureeMinutes)";
 
-    await connection.ExecuteAsync(query, new
-    {
-        Id        = prestation.Id.ToString(),
-        ServiceId = prestation.ServiceId.ToString(),
-        prestation.Nom,
-        prestation.Description,
-        prestation.Prix,
-        prestation.DureeMinutes
-    });
-}
+//     await connection.ExecuteAsync(query, new
+//     {
+//         Id        = prestation.Id.ToString(),
+//         ServiceId = prestation.ServiceId.ToString(),
+//         prestation.Nom,
+//         prestation.Description,
+//         prestation.Prix,
+//         prestation.DureeMinutes
+//     });
+// }
 
 public async Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId)
 {

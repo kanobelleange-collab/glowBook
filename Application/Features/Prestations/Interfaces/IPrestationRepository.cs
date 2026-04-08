@@ -1,32 +1,19 @@
-
+using Application.Features.Prestations.DTOs;
 using Domain.Entities;
 
 namespace Application.Features.Prestations.Interfaces
 {
     public interface IPrestationRepository
     {
-        //  Récupérer une prestation par son Id
         Task<Prestation?> GetByIdAsync(Guid id);
+        Task<List<PrestationDto>> GetByServiceAsync(Guid serviceId);
 
-        //  Récupérer toutes les prestations d'un service
-        Task<List<Prestation>> GetByServiceAsync(Guid serviceId);
+        
+        Task<List<PrestationDto>> GetByEtablissementAsync(Guid etablissementId);
+        
 
-        // Récupérer toutes les prestations d'un établissement
-        Task<List<Prestation>> GetByEtablissementAsync(Guid etablissementId);
-
-      
-
-
-        //  Rechercher par nom
-        Task<List<Prestation>> RechercherAsync(string motCle);
-
-        // Ajouter une prestation
-        Task AddAsync(Prestation prestation);
-
-        //  Mettre à jour une prestation
-        Task UpdateAsync(Prestation prestation);
-
-        //  Supprimer une prestation
-        Task DeleteAsync(Guid id);
+        Task<PrestationDto> AddAsync(Prestation prestation);
+        Task<PrestationDto> UpdateAsync(Prestation prestation);
+        
     }
 }

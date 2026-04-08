@@ -15,16 +15,16 @@ namespace Application.Features.Rendevou.Interfaces
         Task<List<RendezVous>> GetByClientAsync(Guid clientId);
 
         // Récupérer tous les RDV d'un praticien
-        Task<List<RendezVous>> GetByPraticienAsync(Guid praticienId);
+        Task<List<RendezVous>> GetByEmployeeAsync(Guid EmployeeId);
 
         // Récupérer tous les RDV d'un établissement
         Task<List<RendezVous>> GetByEtablissementAsync(Guid etablissementId);
 
         // Récupérer les RDV d'un praticien pour une journée précise
-        Task<List<RendezVous>> GetByPraticienEtDateAsync(Guid praticienId, DateTime date);
+        Task<List<RendezVous>> GetByEmployeeEtDateAsync(Guid EmployeeId, DateTime dateHeure);
 
         // Vérifier si un praticien est déjà occupé à un créneau donné
-        Task<bool> CreneauDejaOccupeAsync(Guid praticienId, DateTime dateHeure);
+        Task<bool> CreneauDejaOccupeAsync(Guid EmployeeId, DateTime dateHeure);
 
         // Récupérer les RDV par statut
         Task<List<RendezVous>> GetByStatutAsync(StatutRendezVous statut);

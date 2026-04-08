@@ -33,11 +33,11 @@ namespace Infrastructure.Repositories
         }
 
         // 3. Planning Praticien
-        public async Task<List<RendezVous>> GetByPraticienAsync(Guid praticienId)
+        public async Task<List<RendezVous>> GetByEmployeeAsync(Guid EmployeeId)
         {
             using var connection = _context.CreateConnection();
-            const string sql = "SELECT * FROM RendezVous WHERE PraticienId = @PraticienId ORDER BY DateHeure ASC";
-            var result = await connection.QueryAsync<RendezVous>(sql, new { PraticienId = praticienId });
+            const string sql = "SELECT * FROM RendezVous WHERE PraticienId = @EmployeeId ORDER BY DateHeure ASC";
+            var result = await connection.QueryAsync<RendezVous>(sql, new { EmployeeId = EmployeeId });
             return result.ToList();
         }
 
@@ -51,26 +51,26 @@ namespace Infrastructure.Repositories
         }
 
         // 5. Agenda du jour pour un praticien
-        public async Task<List<RendezVous>> GetByPraticienEtDateAsync(Guid praticienId, DateTime date)
+        public async Task<List<RendezVous>> GetByEmployeeEtDateAsync(Guid EmployeeId, DateTime dateHeure)
         {
             using var connection = _context.CreateConnection();
             // Utilisation de DATE() pour comparer uniquement le jour sans l'heure
             const string sql = @"
                 SELECT * FROM RendezVous 
-                WHERE PraticienId = @PraticienId 
+                WHERE EmployeeId = @EmployeeId 
                 AND DATE(DateHeure) = DATE(@Date)
                 AND Statut != @StatutAnnule";
             
             var result = await connection.QueryAsync<RendezVous>(sql, new { 
-                PraticienId = praticienId, 
-                Date = date,
+                PraticienId = EmployeeId, 
+                Date = dateHeure,
                 StatutAnnule = (int)StatutRendezVous.Annule 
             });
             return result.ToList();
         }
 
         // 6. Vérification anti-doublon (Crucial pour la création)
-        public async Task<bool> CreneauDejaOccupeAsync(Guid praticienId, DateTime dateHeure)
+        public async Task<bool> CreneauDejaOccupeAsync(Guid EmployeeId, DateTime dateHeure)
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
@@ -80,7 +80,7 @@ namespace Infrastructure.Repositories
                 AND Statut IN (@Attente, @Confirme)";
             
             var count = await connection.ExecuteScalarAsync<int>(sql, new { 
-                PraticienId = praticienId, 
+                PraticienId = EmployeeId, 
                 DateHeure = dateHeure,
                 Attente = (int)StatutRendezVous.EnAttente,
                 Confirme = (int)StatutRendezVous.Confirme
@@ -103,8 +103,8 @@ namespace Infrastructure.Repositories
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
-                INSERT INTO RendezVous (Id, DateHeure, Statut, Prix, ClientId, PraticienId, ServiceId, EtablissementId)
-                VALUES (@Id, @DateHeure, @Statut, @Prix, @ClientId, @PraticienId, @ServiceId, @EtablissementId)";
+                INSERT INTO RendezVous (  ClientId, EmployeeId, ServiceId, EtablissementId,DateHeure, Statut, Prix, NotesClient, RaisonAnnulation)
+                VALUES (  @ClientId, @EmployeeId, @ServiceId, @EtablissementId,@DateHeure, @Statut, @Prix, @NotesClient, @RaisonAnnulation)";
             
             await connection.ExecuteAsync(sql, rdv);
         }
