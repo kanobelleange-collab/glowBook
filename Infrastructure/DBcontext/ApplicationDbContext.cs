@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS RendezVous (
     RaisonAnnulation TEXT          NULL,
     DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_RDV_Client        FOREIGN KEY (ClientId)        REFERENCES Clients(Id),
-    CONSTRAINT FK_RDV_Employee    FOREIGN KEY (EmployeeId)     REFERENCES Praticiens(Id),
+CONSTRAINT FK_RDV_Employee FOREIGN KEY (PraticienId) REFERENCES Employees(Id),
     CONSTRAINT FK_RDV_Etablissement FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id)
 );
 

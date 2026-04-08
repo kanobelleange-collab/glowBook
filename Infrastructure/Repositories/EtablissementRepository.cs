@@ -285,7 +285,7 @@ ORDER BY DistanceKm ASC;
     });
 }
 
-public async Task AddPrestationAsync(Prestation prestation)
+/*public async Task AddPrestationAsync(Prestation prestation)
 {
     using var connection = _dbContext.CreateConnection();
     const string query = @"
@@ -303,7 +303,7 @@ public async Task AddPrestationAsync(Prestation prestation)
         prestation.Prix,
         prestation.DureeMinutes
     });
-}
+}*/
 
 public async Task<List<EtablissementService>> GetServicesByEtablissementIdAsync(Guid etablissementId)
 {
