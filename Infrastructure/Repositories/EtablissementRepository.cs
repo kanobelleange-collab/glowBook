@@ -333,6 +333,22 @@ public async Task DeleteServiceAsync(Guid serviceId)
         query, new { EtablissementId = etablissementId.ToString() });
     return result.ToList();
     }
+    public async Task<EtablissementService?> GetServiceByIdAsync(Guid serviceId)
+{
+    using var connection = _dbContext.CreateConnection();
+    
+    // On sélectionne bien toutes les colonnes, y compris 'Data'
+    const string query = @"
+        SELECT Id, EtablissementId, TypeServiceNom, Data 
+        FROM etablissementservices 
+        WHERE Id = @Id";
+
+    return await connection.QueryFirstOrDefaultAsync<EtablissementService>(
+        query, 
+        new { Id = serviceId.ToString() }
+    );
+}
     }
+    
 
 }

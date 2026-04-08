@@ -10,6 +10,7 @@ namespace Application.Features.Etablissements.Interfaces
     {
         // Lecture
         Task<Etablissement?> GetByIdAsync(Guid id);
+        Task<EtablissementService?> GetServiceByIdAsync(Guid serviceId);
         Task<List<Etablissement>> GetAllAsync();
         Task<List<Etablissement>> GetByVilleAsync(string ville);
         Task<List<EtablissementDto>> GetByServiceAsync(string typeServiceNom);
