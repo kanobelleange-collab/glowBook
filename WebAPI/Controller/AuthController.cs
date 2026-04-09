@@ -11,8 +11,13 @@ namespace WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IMediator mediator) => _mediator = mediator;
+        public AuthController(IMediator mediator, ILogger<AuthController> logger)
+        {
+            _mediator = mediator;
+            _logger = logger;
+        }
 
         [AllowAnonymous]
         [HttpPost("login")]
@@ -38,7 +43,9 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "Erreur interne lors de l'inscription, comme un bug dans un mod." });
+                // Journaliser l'exception pour le débogage (recommandé en production)
+                _logger.LogError(ex, "Erreur lors de l'inscription");
+                return StatusCode(500, new { Error = $"Erreur interne lors de l'inscription : {ex.Message}" });
             }
         }
     }
