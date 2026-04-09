@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
 using Infrastructure.Service;
+using Application.Features.Admin.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +95,7 @@ builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequir
 // ✅ Repositories & Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();

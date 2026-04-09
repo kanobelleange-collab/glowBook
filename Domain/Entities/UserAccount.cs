@@ -15,5 +15,6 @@ namespace Domain.Entities
         public string Role { get; set; } = string.Empty;
         public Guid ReferenceId { get; set; }
         public string ReferenceType { get; set; } = string.Empty; // "Client" ou "Employee"
+        public bool IsActive { get; set; } = true; // Par défaut actif, comme un joueur en ligne
     }
 }

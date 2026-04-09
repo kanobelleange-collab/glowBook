@@ -44,6 +44,7 @@ namespace Infrastructure.DBcontext
                     Note             DOUBLE        NOT NULL DEFAULT 0,
                     NoteMoyenne      DOUBLE        NOT NULL DEFAULT 0,
                     EstActif         TINYINT(1)    NOT NULL DEFAULT 1,
+                    EstApprouve      TINYINT(1)    NOT NULL DEFAULT 0,  -- Nouveau champ pour modération, comme approuver un nouveau salon dans un serveur
                     IsDeleted        TINYINT(1)    NOT NULL DEFAULT 0,
                     DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     DateModification DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -166,6 +167,19 @@ namespace Infrastructure.DBcontext
                     DatePaiement  DATETIME      NULL,
                     TransactionId VARCHAR(100)  NULL,
                     CONSTRAINT FK_Paiements_RDV FOREIGN KEY (RendezVousId) REFERENCES RendezVous(Id)
+                );
+
+                CREATE TABLE IF NOT EXISTS UserAccounts (
+                    IntId         INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    Id            CHAR(36)     NOT NULL UNIQUE,
+                    Email         VARCHAR(150) NOT NULL UNIQUE,
+                    PasswordHash  VARCHAR(255) NOT NULL,
+                    Role          VARCHAR(50)  NOT NULL,
+                    ReferenceId   CHAR(36)     NOT NULL,
+                    ReferenceType VARCHAR(50)  NOT NULL,
+                    IsActive      TINYINT(1)   NOT NULL DEFAULT 1,  -- Pour bannir/débannir les utilisateurs
+                    INDEX IX_UserAccounts_Email (Email),
+                    INDEX IX_UserAccounts_Role (Role)
                 );
 
                 CREATE TABLE IF NOT EXISTS Avis (
