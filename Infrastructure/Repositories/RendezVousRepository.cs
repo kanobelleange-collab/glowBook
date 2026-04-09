@@ -62,7 +62,7 @@ namespace Infrastructure.Repositories
                 AND Statut != @StatutAnnule";
             
             var result = await connection.QueryAsync<RendezVous>(sql, new { 
-                PraticienId = EmployeeId, 
+                EmployeeId = EmployeeId, 
                 Date = dateHeure,
                 StatutAnnule = (int)StatutRendezVous.Annule 
             });
@@ -75,12 +75,12 @@ namespace Infrastructure.Repositories
             using var connection = _context.CreateConnection();
             const string sql = @"
                 SELECT COUNT(1) FROM RendezVous 
-                WHERE PraticienId = @PraticienId 
+                WHERE EmployeeId = @EmployeeId 
                 AND DateHeure = @DateHeure 
                 AND Statut IN (@Attente, @Confirme)";
             
             var count = await connection.ExecuteScalarAsync<int>(sql, new { 
-                PraticienId = EmployeeId, 
+                EmployeeId = EmployeeId, 
                 DateHeure = dateHeure,
                 Attente = (int)StatutRendezVous.EnAttente,
                 Confirme = (int)StatutRendezVous.Confirme

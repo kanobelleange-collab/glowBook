@@ -9,7 +9,7 @@ namespace Application.Features.Employees.Commands.UpdateEmployee
         string Prenom,
         string Specialite,
         
-        int AnneesExperience,
+        int AnneeExperience,
         string? UrlPhoto = null)
     
      : IRequest<EmployeeDto>;

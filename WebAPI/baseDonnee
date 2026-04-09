@@ -146,6 +146,23 @@ CREATE TABLE IF NOT EXISTS Avis (
     CONSTRAINT FK_Avis_Client        FOREIGN KEY (ClientId)        REFERENCES Clients(Id),
     CONSTRAINT FK_Avis_Etablissement FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id)
 );
+CREATE TABLE Disponibilites (
+    Id          CHAR(36)     NOT NULL DEFAULT (UUID()),
+    EmployeeId  CHAR(36)     NOT NULL,
+    Jour        VARCHAR(20)  NOT NULL,   -- "Monday", "Tuesday", etc.
+    HeureDebut  TIME         NOT NULL,   -- 08:00:00
+    HeureFin    TIME         NOT NULL,   -- 18:00:00
+
+    PRIMARY KEY (Id),
+
+    -- Un employé ne peut pas avoir deux fois le même jour
+    UNIQUE KEY UQ_Disponibilite_Employee_Jour (EmployeeId, Jour),
+
+    CONSTRAINT FK_Disponibilites_Employees
+        FOREIGN KEY (EmployeeId)
+        REFERENCES Employees(Id)
+        ON DELETE CASCADE
+);
 
 CREATE INDEX IF NOT EXISTS IX_Etablissements_Ville    ON Etablissements(Ville);
 CREATE INDEX IF NOT EXISTS IX_Etablissements_EstActif ON Etablissements(EstActif);

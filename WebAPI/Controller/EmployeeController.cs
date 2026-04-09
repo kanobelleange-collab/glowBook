@@ -10,6 +10,7 @@ using Application.Features.Employees.Queries.GetBySpecialite;
 using Application.Features.Employees.Queries.GetDisponibilite;
 using Application.Features.Employees.Queries.GetById;
 using Application.Features.Employees.Queries;
+using Application.Features.Employees.Commands.AjoutDisponibilite;
 
 namespace WebAPI.Controllers
 {
@@ -76,13 +77,24 @@ public async Task<ActionResult<EmployeeDto>> Add([FromBody] CreerEmployeeCommand
     );
 }
 
+
+        [HttpPost("{id:guid}/disponibilites")]
+       
+        public async Task<IActionResult> AjouterDisponibilite([FromBody] AjouterDisponibiliteCommand command,
+            CancellationToken ct)
+        {
+           
+            var result = await _mediator.Send(command, ct);
+
+            return Ok(result) ;
+        }
+
         // PUT: api/Employee/{id}
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEmployeeCommand command)
+        public async Task<IActionResult> Update( [FromBody] UpdateEmployeeCommand command)
         {
             // Sécurité : on s'assure que l'ID de l'URL est celui utilisé
-            if (id != command.Id) 
-                return BadRequest("L'ID fourni dans l'URL ne correspond pas à l'ID de l'objet.");
+          
 
             await _mediator.Send(command);
             return NoContent();

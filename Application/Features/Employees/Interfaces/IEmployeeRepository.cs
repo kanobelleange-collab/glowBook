@@ -22,6 +22,7 @@ namespace Application.Features.Employees.Interfaces
 
         // Ajouter un praticien
         Task AddAsync(Employee employee);
+        Task AddDisponibiliteAsync(DisponibiliteDto disponibilite);
 
         // Mettre à jour un praticien
         Task <EmployeeDto>UpdateAsync(Employee employee);

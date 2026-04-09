@@ -14,14 +14,14 @@ namespace Infrastructure.Repositories
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _siteId;
-        private readonly string _notify_url;
+        private readonly string _notifyUrl;
 
         public CinetPayService(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
-            _apiKey = config["CinetPay:ApiKey"] ?? throw new ArgumentNullException(nameof(config));
-            _siteId = config["CinetPay:SiteId"] ?? throw new ArgumentNullException(nameof(config));
-            _notify_url = config["CinetPay:NotifyUrl"]?? throw new ArgumentNullException(nameof(config));
+            _apiKey = config["CinetPay:ApiKey"] ?? throw new ArgumentNullException("CinetPay:ApiKey is missing");
+            _siteId = config["CinetPay:SiteId"] ?? throw new ArgumentNullException("CinetPay:SiteId is missing");
+            _notifyUrl = config["CinetPay:NotifyUrl"] ?? throw new ArgumentNullException("CinetPay:NotifyUrl is missing");
         }
 
         public async Task<string> CreerSessionPaiementAsync(
@@ -31,40 +31,51 @@ namespace Infrastructure.Repositories
             string urlRetourSucces,
             string urlRetourEchec)
         {
+            // 1. Détermination du canal de paiement (Mobile Money par défaut pour le Cameroun)
+            var selectedChannels = methodePaiement?.ToUpper() switch
+            {
+                "ORANGEMONEY" => "MOBILE_MONEY",
+                "MTNMOMO" => "MOBILE_MONEY",
+                "CARD" => "CREDIT_CARD",
+                _ => "ALL" 
+            };
+
+            // 2. Construction du corps de la requête (Body)
+            // Note : 'amount' doit être un entier pour l'API CinetPay en XAF
             var body = new
             {
                 apikey = _apiKey,
                 site_id = _siteId,
                 transaction_id = rendezVousId.ToString(),
-                amount = montant,
+                amount = (int)montant, 
                 currency = "XAF",
                 description = "Réservation GlowBook",
+                notify_url = _notifyUrl,
                 return_url = urlRetourSucces,
                 cancel_url = urlRetourEchec,
-                channels = methodePaiement == "OrangeMoney" ? "ORANGE_MONEY" : "MTN_MOMO"
+                channels = selectedChannels,
+                metadata = "" 
             };
 
             try
             {
-                // Au lieu du ternaire, utilise une logique plus souple
-var channels = methodePaiement.ToUpper() switch
-{
-    "ORANGEMONEY" => "MOBILE_MONEY",
-    "MTNMOMO" => "MOBILE_MONEY",
-    "CARD" => "CREDIT_CARD",
-    _ => "ALL" // Permet au client de choisir sur l'interface CinetPay
-};
                 var response = await _httpClient.PostAsJsonAsync(
                     "https://api-checkout.cinetpay.com/v2/payment", body);
 
-                response.EnsureSuccessStatusCode();
+                // Si l'API renvoie une erreur (ex: 400), on récupère le message détaillé
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetail = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"CinetPay API Error ({(int)response.StatusCode}): {errorDetail}");
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<CinetPayResponse>();
 
-                return result?.Data?.PaymentUrl ?? throw new InvalidOperationException("PaymentUrl not found");
+                return result?.Data?.PaymentUrl ?? throw new InvalidOperationException("La réponse CinetPay ne contient pas d'URL de paiement.");
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                throw new Exception($"CinetPay API error: {ex.Message}", ex);
+                throw new Exception($"Erreur lors de l'initialisation du paiement : {ex.Message}", ex);
             }
         }
 
@@ -74,21 +85,29 @@ var channels = methodePaiement.ToUpper() switch
             {
                 var response = await _httpClient.PostAsJsonAsync(
                     "https://api-checkout.cinetpay.com/v2/payment/check",
-                    new { apikey = _apiKey, site_id = _siteId, transaction_id = transactionId });
+                    new 
+                    { 
+                        apikey = _apiKey, 
+                        site_id = _siteId, 
+                        transaction_id = transactionId 
+                    });
 
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode) return false;
+
                 var result = await response.Content.ReadFromJsonAsync<CinetPayResponse>();
-
+                
+                // CinetPay retourne 'ACCEPTED' quand le paiement est validé
                 return result?.Data?.Status == "ACCEPTED";
             }
-            catch (HttpRequestException ex)
+            catch
             {
-                throw new Exception($"CinetPay verification error: {ex.Message}", ex);
+                return false;
             }
         }
 
         public async Task<bool> RembourserAsync(string transactionId, decimal montant)
         {
+            // Implémentation future si nécessaire
             return await Task.FromResult(true);
         }
     }

@@ -50,6 +50,19 @@ namespace Infrastructure.Repositories
 
             return _mapper.Map<List<EmployeeDto>>(disponibles);
         }
+        public async Task AddDisponibiliteAsync(DisponibiliteDto disponibilite)
+{
+    using var connection = _dbContext.CreateConnection();
+
+    const string query = @"
+        INSERT INTO EmployeeDisponibilites
+        (Id, EmployeeId, Jour, HeureDebut, HeureFin)
+        VALUES
+        (@Id, @EmployeeId, @Jour, @HeureDebut, @HeureFin)";
+
+    await connection.ExecuteAsync(query, disponibilite);
+}
+        
 
         public async Task<List<EmployeeDto>> GetBySpecialiteAsync(string specialite)
         {
@@ -71,10 +84,10 @@ namespace Infrastructure.Repositories
             const string query = @"
                 INSERT INTO `Employees` 
                     (`Id`, `EtablissementId`, `Nom`, `Prenom`, `Specialite`, `UrlPhoto`, 
-                     `AnneesExperience`, `DateCreation`)
+                     `AnneeExperience`)
                 VALUES 
                     (@Id, @EtablissementId, @Nom, @Prenom, @Specialite, @UrlPhoto,
-                     @AnneesExperience,  @DateCreation)";
+                     @AnneeExperience)";
 
             await connection.ExecuteAsync(query, employee);
         }
@@ -88,7 +101,7 @@ namespace Infrastructure.Repositories
                     `Prenom` = @Prenom,
                     `Specialite` = @Specialite,
                     `UrlPhoto` = @UrlPhoto,
-                    `AnneesExperience` = @AnneesExperience
+                    `AnneeExperience` = @AnneeExperience
                 WHERE `Id` = @Id";
 
             await connection.ExecuteAsync(query, employee);

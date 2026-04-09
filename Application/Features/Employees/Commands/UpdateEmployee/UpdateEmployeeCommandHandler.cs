@@ -29,7 +29,7 @@ namespace Application.Features.Employees.Commands.UpdateEmployee
             employee.Prenom = request.Prenom;
             employee.Specialite = request.Specialite;
             employee.UrlPhoto = request.UrlPhoto;
-            employee.AnneesExperience = request.AnneesExperience;
+            employee.AnneeExperience = request.AnneeExperience;
             
 
             await _repository.UpdateAsync(employee);

@@ -1,6 +1,7 @@
 using MediatR;
 using Application.Features.Rendevou.Interfaces;
 using Application.Features.Employees.Interfaces;
+using Application.Features.Etablissements.Interfaces;
 using Application.Features.Prestations.Interfaces;
 using Application.Features.Notifications.Interfaces;
 using Application.Features.Rendevou.DTOs;
@@ -17,17 +18,20 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
     {
         private readonly IRendezVousRepository _rdvRepository;
         private readonly IEmployeeRepository _EmployeeRepository;
+        private readonly IEtablissementRepository _etablissementRepository;
         private readonly IPrestationRepository _prestationRepository;
         private readonly INotificationService _notificationService;
 
         public CreerRendezVousCommandHandler(
             IRendezVousRepository rdvRepository,
             IEmployeeRepository employeeRepository,
+            IEtablissementRepository etablissementRepository,
             IPrestationRepository prestationRepository,
             INotificationService notificationService)
         {
             _rdvRepository       = rdvRepository;
             _EmployeeRepository = employeeRepository;
+            _etablissementRepository   = etablissementRepository;
             _prestationRepository   = prestationRepository;
             _notificationService = notificationService;
         }
@@ -37,14 +41,16 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             CancellationToken cancellationToken)
         {
             var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId)
-                ?? throw new Exception("Praticien introuvable.");
+                ?? throw new Exception("Employer introuvable.");
 
             bool occupe = await _rdvRepository
                 .CreneauDejaOccupeAsync(command.EmployeeId, command.DateHeure);
             if (occupe)
                 throw new Exception("Ce créneau est déjà occupé.");
 
-            var service = await _prestationRepository.GetByIdAsync(command.ServiceId)
+            // var service = await _prestationRepository.GetByIdAsync(command.ServiceId)
+            //     ?? throw new Exception("Service introuvable.");
+                var service = await _etablissementRepository.GetServiceByIdAsync(command.ServiceId)
                 ?? throw new Exception("Service introuvable.");
 
             var rdv = new RdvEntity(
@@ -53,7 +59,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
                 command.ServiceId,
                 command.EtablissementId,
                 command.DateHeure,
-                service.Prix
+                command.Prix
             
             );
 

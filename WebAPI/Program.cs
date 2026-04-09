@@ -4,6 +4,7 @@ using Application.Features.Etablissements.Interfaces;
 using Application.Features.Rendevou.Interfaces;
 using Application.Features.Notifications.Interfaces;
 using Application.Features.Clients.Interfaces;
+using Application.Features.Payements.Interfaces;
 using Infrastructure.DBcontext;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -90,6 +91,9 @@ builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAvisRepository, AvisRepository>();
 builder.Services.AddScoped<IPrestationRepository, PrestationRepository>();
+// Dans Infrastructure/DependencyInjection.cs
+builder.Services.AddScoped<IPaiementRepository, PaiementRepository>();
+builder.Services.AddScoped<IPaymentService, CinetPayService>();
 
 
 

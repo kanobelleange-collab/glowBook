@@ -34,7 +34,7 @@ namespace Application.Features.Employees.Commands.CreerEmployee
                 command.Specialite,
                 command.UrlPhoto,
                
-                command.AnneesExperience
+                command.AnneeExperience
                 
             );
 

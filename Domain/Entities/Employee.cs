@@ -13,7 +13,7 @@ namespace Domain.Entities
         public string Specialite { get; set; }
         public string? UrlPhoto { get; set; }
         public string DateHeure { get; set; }
-        public int AnneesExperience { get; set; }
+        public int AnneeExperience { get; set; }
         
         // Initialiser la liste ici permet d'éviter des erreurs quand Dapper crée l'objet
         public List<Disponibilite> Disponibilites { get; set; } = new List<Disponibilite>();
@@ -30,7 +30,7 @@ namespace Domain.Entities
         }
 
         // --- 2. TON CONSTRUCTEUR EXISTANT ---
-        public Employee(Guid etablissementId, string nom, string prenom, string specialite, string dateHeure, int anneesExperience = 0)
+        public Employee(Guid etablissementId, string nom, string prenom, string specialite, string dateHeure, int anneeExperience = 0)
         {
             Id = Guid.NewGuid();
             EtablissementId = etablissementId;
@@ -38,7 +38,7 @@ namespace Domain.Entities
             Prenom = prenom;
             Specialite = specialite;
             DateHeure = dateHeure;
-            AnneesExperience = anneesExperience;
+            AnneeExperience = anneeExperience;
             Disponibilites = new List<Disponibilite>();
         }
 

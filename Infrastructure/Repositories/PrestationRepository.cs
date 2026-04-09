@@ -48,7 +48,7 @@ namespace Infrastructure.Repositories
                 ORDER BY Prix ASC";
 
             var result = await connection.QueryAsync<Prestation>(
-                query, new { ServiceId = serviceId.ToString() });
+                query, new { ServiceId = serviceId});
 
             return _mapper.Map<List<PrestationDto>>(result);
         }
