@@ -39,23 +39,40 @@ namespace Infrastructure.Repositories
             return _mapper.Map<List<EmployeeDto>>(result);
         }
 
-        public async Task<List<EmployeeDto>> GetDisponiblesAsync(Guid etablissementId, DateTime dateHeure)
-        {
-            using var connection = _dbContext.CreateConnection();
-            const string query = "SELECT * FROM `Employees` WHERE `EtablissementId` = @EtablissementId";
-            
-            var employees = await connection.QueryAsync<Employee>(query, new { EtablissementId = etablissementId });
+     public async Task<List<EmployeeDto>> GetDisponiblesAsync(Guid etablissementId, DateTime dateHeure)
+{
+    using var connection = _dbContext.CreateConnection();
+    
+    // On récupère tout le monde en une seule fois
+    const string query = @"
+        SELECT * FROM `Employees` WHERE `EtablissementId` = @EtablissementId;
+        SELECT * FROM `Disponibilites` WHERE `EmployeeId` IN 
+            (SELECT `Id` FROM `Employees` WHERE `EtablissementId` = @EtablissementId);";
 
-            var disponibles = employees.Where(e => e.EstDisponible(dateHeure));
+    using var multi = await connection.QueryMultipleAsync(query, new { EtablissementId = etablissementId });
+    
+    // On lit les deux listes
+    var employees = (await multi.ReadAsync<Employee>()).ToList();
+    var allDispos = (await multi.ReadAsync<Disponibilite>()).ToList();
 
-            return _mapper.Map<List<EmployeeDto>>(disponibles);
-        }
+    // LIAISON : On remplit la liste 'Disponibilites' de chaque employé
+    foreach (var emp in employees)
+    {
+        // Maintenant 'd.EmployeeId' existe, donc cette ligne compile !
+        emp.Disponibilites = allDispos.Where(d => d.EmployeeId == emp.Id).ToList();
+    }
+
+    // FILTRAGE : On utilise votre méthode de domaine EstDisponible
+    var disponibles = employees.Where(e => e.EstDisponible(dateHeure)).ToList();
+
+    return _mapper.Map<List<EmployeeDto>>(disponibles);
+}
         public async Task AddDisponibiliteAsync(DisponibiliteDto disponibilite)
 {
     using var connection = _dbContext.CreateConnection();
 
     const string query = @"
-        INSERT INTO EmployeeDisponibilites
+        INSERT INTO Disponibilites
         (Id, EmployeeId, Jour, HeureDebut, HeureFin)
         VALUES
         (@Id, @EmployeeId, @Jour, @HeureDebut, @HeureFin)";

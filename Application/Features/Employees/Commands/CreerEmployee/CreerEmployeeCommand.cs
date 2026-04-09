@@ -12,7 +12,7 @@ namespace Application.Features.Employees.Commands.CreerEmployee
         public string? UrlPhoto { get; set; }
         public int AnneeExperience { get; set; }
 
-        public List<DisponibiliteDto> Disponibilites { get; set; } = new();
+     
 }
 
 

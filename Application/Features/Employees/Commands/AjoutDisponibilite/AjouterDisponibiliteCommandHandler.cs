@@ -21,29 +21,31 @@ namespace Application.Features.Employees.Commands
             _mapper              = mapper;
         }
 
-        public async Task<EmployeeDto> Handle(
-            AjouterDisponibiliteCommand command,
-            CancellationToken cancellationToken)
-        {
-            // 1. Récupérer le praticien
-            var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId);
-            if (employee == null)
-                throw new Exception($"Employee avec l'Id {command.EmployeeId} introuvable.");
+       public async Task<EmployeeDto> Handle(
+    AjouterDisponibiliteCommand command,
+    CancellationToken cancellationToken)
+{
+    // 1. Récupérer l'employé (incluant ses dispos actuelles via le nouveau GetByIdAsync)
+    var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId);
+    
+    if (employee == null)
+        throw new Exception($"Employee avec l'Id {command.EmployeeId} introuvable.");
 
-            // 2. Convertir les strings en types appropriés
-            var jour      = Enum.Parse<DayOfWeek>(command.Jour, ignoreCase: true);
-            var heureDebut = TimeSpan.Parse(command.HeureDebut);
-            var heureFin   = TimeSpan.Parse(command.HeureFin);
+    // 2. Utilisation de vos méthodes de parsing personnalisées
+    var jour = Disponibilite.ConvertirJour(command.Jour);
+    var heureDebut = Disponibilite.ParseHeure(command.HeureDebut);
+    var heureFin = Disponibilite.ParseHeure(command.HeureFin);
 
-            // 3. Créer et ajouter la disponibilité
-            var disponibilite = new Disponibilite(jour, heureDebut, heureFin);
-            employee.AjouterDisponibilite(disponibilite);
+    // 3. Créer et ajouter la disponibilité
+    var disponibilite = new Disponibilite(jour, heureDebut, heureFin);
+// UTILISEZ :
+employee.AjouterDisponibilite(disponibilite);
 
-            // 4. Sauvegarder
-            await _EmployeeRepository.UpdateAsync(employee);
+    // 4. Sauvegarder (via la méthode transactionnelle du Repository)
+    await _EmployeeRepository.UpdateAsync(employee);
 
-            // 5. Retourner le DTO mis à jour
-            return _mapper.Map<EmployeeDto>(employee);
-        }
+    // 5. Retourner le DTO mis à jour
+    return _mapper.Map<EmployeeDto>(employee);
+}
     }
 }
