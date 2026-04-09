@@ -9,9 +9,6 @@ namespace Application.Features.Clients.Interfaces
         // Récupérer un client par son Id
         Task<ClientDto?> GetByIdAsync(Guid id);
 
-        // Récupérer un client par son email (pour la connexion)
-        Task<ClientDto?> GetByEmailAsync(string email);
-
         // Ajouter un nouveau client
         Task<Client> AddAsync(Client client);
 

@@ -5,7 +5,6 @@ using Application.Features.Clients.Commands.UpdateClient;
 using Application.Features.Clients.Commands.DeleteClient;
 using Application.Features.Clients.Queries.GetAll;
 using Application.Features.Clients.Queries.GetById;
-using Application.Features.Clients.Queries.GetClientByEmail;
 
 namespace WebAPI.Controllers
 {
@@ -36,14 +35,6 @@ namespace WebAPI.Controllers
             return response != null ? Ok(response) : NotFound();
         }
 
-        // 3. Récupérer un client par son Email
-        [HttpGet("by-email/{email}")]
-        public async Task<IActionResult> GetByEmail(string email)
-        {
-            var response = await _mediator.Send(new GetClientByEmailQuery(email));
-            return response != null ? Ok(response) : NotFound();
-        }
-
         // 4. Créer un client
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateClientCommand command)
@@ -54,10 +45,10 @@ namespace WebAPI.Controllers
 
         // 5. Mettre à jour un client
         [HttpPut()]
-public async Task<IActionResult> Update( [FromBody] UpdateClientCommand command)
-{
-    // if (id != command.Id) return BadRequest();
-            
+        public async Task<IActionResult> Update([FromBody] UpdateClientCommand command)
+        {
+            // if (id != command.Id) return BadRequest();
+
             await _mediator.Send(command);
             return NoContent();
         }

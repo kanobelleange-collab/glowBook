@@ -6,12 +6,11 @@ namespace Application.Features.Clients.DTOs
     {
         // public Guid Id { get; set; }
         public string? Nom { get; set; }
-        public string? Email { get; set; }
         public string? Telephone { get; set; }
         public string? Ville { get; set; }
-        public  string? Quartier { get; set; }
+        public string? Quartier { get; set; }
         public DateTime DateInscription { get; set; }
         public bool EstActif { get; set; }
-       
+
     }
 }

@@ -6,10 +6,9 @@ namespace Domain.Entities
     {
         public Guid Id { get; set; }
         public string? Nom { get; set; }
-        public string? Email { get; set; }
         public string? Telephone { get; set; }
-         public string Quartier  { get; set; } = string.Empty; // ✅ entré par l'établissement
-       
+        public string Quartier { get; set; } = string.Empty; // ✅ entré par l'établissement
+
         public string? Ville { get; set; }
         public List<string> Preferences { get; set; }
         public DateTime DateInscription { get; set; }
@@ -20,6 +19,6 @@ namespace Domain.Entities
             if (!Preferences.Contains(p)) Preferences.Add(p);
         }
 
-       
+
     }
 }
