@@ -1,64 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Application.Features.Clients.Commands.CreateClient;
 using Application.Features.Clients.Commands.UpdateClient;
 using Application.Features.Clients.Commands.DeleteClient;
 using Application.Features.Clients.Queries.GetAll;
 using Application.Features.Clients.Queries.GetById;
 
-namespace WebAPI.Controllers
+namespace WebAPI.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class ClientController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ClientController : ControllerBase
+    private readonly IMediator _mediator;
+    public ClientController(IMediator mediator) => _mediator = mediator;
+
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAll()
     {
-        private readonly IMediator _mediator;
+        return Ok(await _mediator.Send(new GetAllClientQuery()));
+    }
 
-        public ClientController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var response = await _mediator.Send(new GetByIdClientQuery(id));
+        return response != null ? Ok(response) : NotFound();
+    }
 
-        // 1. Récupérer tous les clients
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _mediator.Send(new GetAllClientQuery());
-            return Ok(response);
-        }
 
-        // 2. Récupérer un client par son ID
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var response = await _mediator.Send(new GetByIdClientQuery(id));
-            return response != null ? Ok(response) : NotFound();
-        }
 
-        // 4. Créer un client
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateClientCommand command)
-        {
-            var id = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id = id }, command);
-        }
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<IActionResult> Create([FromBody] CreateClientCommand command)
+    {
+        var id = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetById), new { id }, command);
+    }
 
-        // 5. Mettre à jour un client
-        [HttpPut()]
-        public async Task<IActionResult> Update([FromBody] UpdateClientCommand command)
-        {
-            // if (id != command.Id) return BadRequest();
+    [HttpPut]
+    public async Task<IActionResult> Update([FromBody] UpdateClientCommand command)
+    {
+        await _mediator.Send(command);
+        return NoContent();
+    }
 
-            await _mediator.Send(command);
-            return NoContent();
-        }
-
-        // 6. Supprimer un client
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _mediator.Send(new DeleteClientCommand(id));
-            return NoContent();
-        }
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _mediator.Send(new DeleteClientCommand(id));
+        return NoContent();
     }
 }
