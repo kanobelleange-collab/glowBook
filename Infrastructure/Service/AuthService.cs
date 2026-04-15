@@ -1,52 +1,51 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Application.Features.Users.Interfaces;
 using Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using BC = BCrypt.Net.BCrypt;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using BCrypt.Net;
 
-namespace Infrastructure.Service
+namespace Infrastructure.Services;
+
+public class AuthService : IAuthService
 {
-    public class AuthService : IAuthService
+    private readonly IConfiguration _config;
+
+    public AuthService(IConfiguration config)
     {
-        private readonly IConfiguration _config;
+        _config = config;
+    }
 
-        public AuthService(IConfiguration config) => _config = config;
+    public string HashPassword(string password)
+        => BCrypt.Net.BCrypt.HashPassword(password);
 
-        public string HashPassword(string password) => BC.HashPassword(password);
+    public bool VerifyPassword(string password, string hashedPassword)
+        => BCrypt.Net.BCrypt.Verify(password, hashedPassword);
 
-        // ✅ Correction CS0117 : Utilisation de la méthode synchrone Verify
-        public bool VerifyPassword(string password, string hashedPassword)
-            => BC.Verify(password, hashedPassword);
+    public string GenerateJwtToken(UserAccount userAccount)
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "Clé_Secrète_De_Secours_32_Caractères_Minimum"));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        public string GenerateJwtToken(UserAccount userAccount)
+        // ✅ Définition des Claims (Le badge d'identité du joueur)
+        var claims = new[]
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            new Claim(JwtRegisteredClaimNames.Sub, userAccount.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("id", userAccount.Id.ToString()),
+            new Claim(ClaimTypes.Role, userAccount.Role.ToString()), // ✅ Fix: Utilise l'Enum correctement
+            new Claim("refId", userAccount.ReferenceId.ToString())
+        };
 
-            // Récupération de la clé depuis le appsettings.json
-            var secretKey = _config["Jwt:Key"] ?? "Clef_Secrete_De_Secours_Trop_Courte_Minimum_32_Chars";
-            var key = Encoding.ASCII.GetBytes(secretKey);
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddHours(8), // Session de 8h
+            signingCredentials: credentials);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim("userId", userAccount.Id.ToString()),
-                    new Claim(ClaimTypes.Email, userAccount.Email),
-                    new Claim(ClaimTypes.Role, userAccount.Role),
-                    new Claim("refId", userAccount.ReferenceId.ToString()),
-                    new Claim("refType", userAccount.ReferenceType)
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

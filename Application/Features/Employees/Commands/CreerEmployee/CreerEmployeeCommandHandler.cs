@@ -17,33 +17,34 @@ namespace Application.Features.Employees.Commands.CreerEmployee
             IMapper mapper)
         {
             _EmployeeRepository = employeeRepository;
-            _mapper              = mapper;
+            _mapper = mapper;
         }
 
         public async Task<EmployeeDto> Handle(
             CreerEmployeeCommand command,
             CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(command.Nom, nameof(command.Nom));
+            ArgumentNullException.ThrowIfNull(command.Prenom, nameof(command.Prenom));
+            ArgumentNullException.ThrowIfNull(command.Specialite, nameof(command.Specialite));
+
             // 1. Créer l'entité
             var employee = new Employee(
-                
                 command.EtablissementId,
                 command.Nom,
-
                 command.Prenom,
                 command.Specialite,
-                command.UrlPhoto,
-               
+                string.Empty,
                 command.AnneeExperience
-                
-            );
+            )
+            {
+                UrlPhoto = command.UrlPhoto
+            };
 
-          // 2. Ajouter la description si présente
-
-            // 3. Sauvegarder en base
+            // 2. Sauvegarder en base
             await _EmployeeRepository.AddAsync(employee);
 
-            // 4. Mapper et retourner
+            // 3. Mapper et retourner
             return _mapper.Map<EmployeeDto>(employee);
         }
     }

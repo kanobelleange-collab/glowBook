@@ -57,10 +57,11 @@ namespace Infrastructure.DBcontext
         -- ✅ Ajout de la table UserAccounts (Indispensable pour l'Auth)
         CREATE TABLE IF NOT EXISTS UserAccounts (
             Id           CHAR(36)     PRIMARY KEY,
-            Email        VARCHAR(255) UNIQUE NOT NULL,
+            Email        VARCHAR(191) UNIQUE NOT NULL,
             PasswordHash VARCHAR(255) NOT NULL,
             Role         INT          NOT NULL,
             ReferenceId  CHAR(36)     NOT NULL,
+            ReferenceType VARCHAR(50) NOT NULL, -- Indispensable pour le switch de profil
             IsActive     TINYINT(1)   NOT NULL DEFAULT 1,
             DateCreation DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
@@ -124,10 +125,10 @@ namespace Infrastructure.DBcontext
         CREATE TABLE IF NOT EXISTS Clients (
             IntId           INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
             Id              CHAR(36)     NOT NULL UNIQUE,
-            Nom             VARCHAR(100) NULL,
-            Email           VARCHAR(150) NULL,
-            Telephone       VARCHAR(20)  NOT NULL,
-            Ville           VARCHAR(100) NOT NULL,
+            Nom             VARCHAR(100) NOT NULL,
+            Email           VARCHAR(191) NULL,
+            Telephone       VARCHAR(20)  NULL, -- Autorise NULL au début
+            Ville           VARCHAR(100) NULL, -- Autorise NULL au début
             Quartier        VARCHAR(100) NULL,
             DateInscription DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
             EstActif        TINYINT(1)   NOT NULL DEFAULT 1
@@ -136,18 +137,17 @@ namespace Infrastructure.DBcontext
         CREATE TABLE IF NOT EXISTS Employees (
             IntId           INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
             Id              CHAR(36)     NOT NULL UNIQUE,
-            EtablissementId CHAR(36)     NOT NULL,
+            EtablissementId CHAR(36)     NULL, -- Peut être lié plus tard
             Nom             VARCHAR(100) NOT NULL,
-            Prenom          VARCHAR(100) NOT NULL,
+            Prenom          VARCHAR(100) NULL, -- On travaille sans prénom au début
             Email           VARCHAR(150) NULL,
             Telephone       VARCHAR(20)  NULL,
             Specialite      VARCHAR(100) NULL,
-            UrlPPhoto       VARCHAR(500) NULL,
-            AnneeExperience int(10)      NOT NULL,
+            UrlPhoto        VARCHAR(500) NULL, -- Fix: UrlPPhoto -> UrlPhoto
+            AnneeExperience INT(10)      NOT NULL DEFAULT 0,
             EstActif        TINYINT(1)   NOT NULL DEFAULT 1,
-            DateCreation    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT FK_Employees_Etablissement FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id) ON DELETE CASCADE
-        );
+            DateCreation    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );  
 
         CREATE TABLE IF NOT EXISTS RendezVous (
             IntId            INT           NOT NULL AUTO_INCREMENT PRIMARY KEY,

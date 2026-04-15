@@ -10,7 +10,7 @@ namespace Domain.Entities
         public string Quartier { get; set; } = string.Empty; // ✅ entré par l'établissement
 
         public string? Ville { get; set; }
-        public List<string> Preferences { get; set; }
+        public List<string> Preferences { get; set; } = new();
         public DateTime DateInscription { get; set; }
         public bool EstActif { get; set; }
 

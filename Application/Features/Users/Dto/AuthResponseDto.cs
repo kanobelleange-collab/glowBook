@@ -5,7 +5,6 @@ namespace Application.Features.Users.Dto
         string Email,
         string Role,
         Guid UserId,
-        string? Nom,
-        string? Prenom
+        string? Nom
     );
 }

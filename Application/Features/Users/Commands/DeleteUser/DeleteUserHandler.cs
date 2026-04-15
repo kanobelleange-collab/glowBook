@@ -16,10 +16,16 @@ namespace Application.Features.Users.Commands.DeleteUser
         {
             // 1. Vérifier si l'utilisateur existe
             var user = await _userRepository.GetByIdAsync(request.UserId);
+
+            // Si l'utilisateur n'existe pas, on renvoie false (échec de l'opération)
             if (user == null) return false;
 
-            // 2. Lancer la suppression (Le Repo gérera la transaction)
-            return await _userRepository.DeleteUserAsync(user.Id);
+            // 2. Lancer la suppression
+            await _userRepository.DeleteUserAsync(user.Id);
+
+            // 3. Retourner true manuellement pour confirmer le succès
+            // Puisque DeleteUserAsync renvoie Task (void), on valide ici.
+            return true;
         }
     }
 }

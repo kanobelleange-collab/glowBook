@@ -1,7 +1,6 @@
 using Application.Features.Users.Dto;
 using Application.Features.Users.Interfaces;
-using Domain.Entities;
-using Domain.Interface;
+using Domain.Enum;
 using MediatR;
 
 namespace Application.Features.Users.Commands.Login
@@ -19,34 +18,37 @@ namespace Application.Features.Users.Commands.Login
 
         public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken ct)
         {
-            // 1. Recherche dans UserAccounts
+            // 1. Recherche du compte par email
             var userAccount = await _userRepository.GetByEmailAsync(request.Email);
-            if (userAccount == null || !_authService.VerifyPassword(request.Password, userAccount.PasswordHash))
+
+            if (userAccount is null)
             {
                 throw new UnauthorizedAccessException("Email ou mot de passe incorrect.");
             }
 
-            // 2. Charger dynamiquement le nom/prénom depuis la table correspondante
-            string? nom = null;
-            string? prenom = null;
-            if (userAccount.ReferenceType == "Client")
+            if (!_authService.VerifyPassword(request.Password, userAccount.PasswordHash))
             {
-                nom = await _userRepository.GetClientNameAsync(userAccount.ReferenceId);
-            }
-            else if (userAccount.ReferenceType == "Employee")
-            {
-                var result = await _userRepository.GetEmployeeNameAsync(userAccount.ReferenceId);
-                if (result.HasValue)
-                {
-                    nom = result.Value.Nom;
-                    prenom = result.Value.Prenom;
-                }
+                throw new UnauthorizedAccessException("Email ou mot de passe incorrect.");
             }
 
-            // 3. Générer le token enrichi
+            // 2. Récupération du Nom selon le rôle
+            var nom = userAccount.Role switch
+            {
+                UserRole.Client => await _userRepository.GetClientNameAsync(userAccount.ReferenceId),
+                UserRole.Employee => (await _userRepository.GetEmployeeNameAsync(userAccount.ReferenceId))?.Nom,
+                _ => null
+            };
+
+            // 3. Génération du Token JWT
             var token = _authService.GenerateJwtToken(userAccount);
 
-            return new AuthResponseDto(token, userAccount.Email, userAccount.Role, userAccount.Id, nom, prenom);
+            return new AuthResponseDto(
+                token,
+                userAccount.Email,
+                userAccount.Role.ToString(),
+                userAccount.Id,
+                nom
+            );
         }
     }
 }

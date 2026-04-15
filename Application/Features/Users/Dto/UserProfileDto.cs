@@ -4,6 +4,5 @@ public record UserProfileDto(
     Guid Id,
     string Email,
     string Role,
-    string Nom,
-    string Prenom
+    string Nom
 );

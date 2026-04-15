@@ -13,23 +13,23 @@ public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, UserPr
 
     public async Task<UserProfileDto> Handle(GetUserProfileQuery request, CancellationToken ct)
     {
+        // 1. On récupère le compte sécu
         var user = await _userRepository.GetByIdAsync(request.UserId);
         if (user == null) throw new KeyNotFoundException("Utilisateur non trouvé.");
 
         string nom = "Inconnu";
-        string prenom = "";
 
-        // Même switch que dans le Login pour charger le profil métier
+        // 2. Switch sur le rôle pour extraire les infos métier
+        // Rappel : On a simplifié au maximum, on ne prend que le NOM ici pour coller à ton DTO
         switch (user.Role)
         {
             case UserRole.Client:
-                var client = await _userRepository.GetClientNameAsync(user.ReferenceId);
-                if (client.HasValue) { nom = client.Value.Nom; prenom = client.Value.Prenom; }
+                nom = await _userRepository.GetClientNameAsync(user.ReferenceId) ?? "Client";
                 break;
 
             case UserRole.Employee:
                 var emp = await _userRepository.GetEmployeeNameAsync(user.ReferenceId);
-                if (emp.HasValue) { nom = emp.Value.Nom; prenom = emp.Value.Prenom; }
+                nom = emp?.Nom ?? "Employé";
                 break;
 
             case UserRole.Admin:
@@ -37,6 +37,7 @@ public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, UserPr
                 break;
         }
 
-        return new UserProfileDto(user.Id, user.Email, user.Role.ToString(), nom, prenom);
+        // 3. Retourne le DTO (UserId, Email, Role, Nom)
+        return new UserProfileDto(user.Id, user.Email, user.Role.ToString(), nom);
     }
 }

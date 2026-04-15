@@ -6,10 +6,10 @@ using Application.Features.Notifications.Interfaces;
 using Application.Features.Clients.Interfaces;
 using Application.Features.Payements.Interfaces;
 using Application.Features.Aviss.Interfaces;
-using Application.Features.Paiements.Commands.InitialiserPaiement;
 using Application.Features.Employees.Interfaces;
 using Application.Features.Prestations.Interfaces;
 using Application.Features.Users.Interfaces;
+using Application.Features.Admin.Interfaces;
 using Infrastructure.DBcontext;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -18,8 +18,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using Infrastructure.Service;
-using Application.Features.Admin.Interfaces;
+using System.Data;
+using WebAPI.Middleware;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,7 @@ builder.Host.UseDefaultServiceProvider(options =>
 });
 
 // --- 🔐 SÉCURITÉ JWT ---
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "Clef_De_Secours_Tres_Longue_32_Caracteres_Minimum";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "GlowBook_Super_Secret_Key_2026_Secure_Long_String!";
 var key = Encoding.ASCII.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(x =>
@@ -47,8 +48,11 @@ builder.Services.AddAuthentication(x =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidateLifetime = true
     };
 });
 
@@ -65,7 +69,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "GlowBook API", Version = "v1" });
 
-    // ✅ Ajout du support JWT dans l'interface Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -88,9 +91,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ✅ Persistence (DB)
+// ✅ Persistence & Dapper
 builder.Services.AddScoped<ApplicationDbContext>(provider => new ApplicationDbContext(builder.Configuration));
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IDbConnection>(sp => sp.GetRequiredService<ApplicationDbContext>().CreateConnection());
 
 // ✅ Repositories & Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -100,10 +104,10 @@ builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IRendezVousRepository, RendezVousRepository>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAvisRepository, AvisRepository>();
 builder.Services.AddScoped<IPrestationRepository, PrestationRepository>();
 builder.Services.AddScoped<IPaiementRepository, PaiementRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPaymentService, CinetPayService>();
 
 // ✅ Géocodage
@@ -113,12 +117,12 @@ builder.Services.AddHttpClient<IGeocodageService, GeocodageService>(client =>
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
-// ✅ MediatR (Scan unique de l'assembly Application)
-// On utilise CreateEtablissementHandler comme marqueur pour trouver l'assembly Application
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateEtablissementHandler).Assembly));
+// ✅ MediatR & AutoMapper (Scan de l'assembly Application)
+// On utilise CreateEtablissementHandler comme point d'ancrage pour scanner tout le projet Application
+var applicationAssembly = typeof(CreateEtablissementHandler).Assembly;
 
-// ✅ AutoMapper
-builder.Services.AddAutoMapper(typeof(CreateEtablissementHandler).Assembly);
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
+builder.Services.AddAutoMapper(cfg => { }, applicationAssembly); // FIX : Réactivation d'AutoMapper
 
 var app = builder.Build();
 
@@ -131,6 +135,9 @@ using (var scope = app.Services.CreateScope())
     await dbContext.InitializeAsync();
 }
 
+// 🚨 L'ExceptionHandlingMiddleware doit être le TOUT PREMIER pour tout attraper
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -141,11 +148,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Ordre vital pour la sécurité et le routage
 app.UseHttpsRedirection();
-
-// ⚠️ L'ORDRE EST CRITIQUE ICI : Auth -> Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();

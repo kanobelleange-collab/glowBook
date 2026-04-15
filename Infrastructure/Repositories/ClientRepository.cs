@@ -34,7 +34,7 @@ namespace Infrastructure.Repositories
         }
 
         // 4. Ajouter un nouveau client
-        public async Task<Client?> AddAsync(Client client)
+        public async Task<Client> AddAsync(Client client)
         {
             using var connection = _context.CreateConnection();
 
@@ -51,7 +51,7 @@ namespace Infrastructure.Repositories
 
 
         // 5. Mettre à jour un client
-        public async Task<ClientDto?> UpdateAsync(Client client)
+        public async Task<ClientDto> UpdateAsync(Client client)
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
@@ -65,10 +65,8 @@ namespace Infrastructure.Repositories
             EstActif = @EstActif 
         WHERE Id = @Id"; // <-- Pas de virgule avant le WHERE !
 
-            // Pour un UPDATE, on utilise ExecuteAsync, pas QueryFirstOrDefault
             await connection.ExecuteAsync(sql, client);
 
-            // On retourne le client mis à jour (mappé en DTO)
             return new ClientDto
             {
                 Nom = client.Nom,
