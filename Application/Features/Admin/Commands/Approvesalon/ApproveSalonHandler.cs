@@ -2,7 +2,7 @@ using Application.Features.Admin.Commands;
 using Application.Features.Admin.Interfaces;
 using MediatR;
 
-namespace Application.Features.Admin.Commands
+namespace Application.Features.Admin.Commands.Approvesalon
 {
     /// <summary>
     /// Handler pour approuver un salon, comme accorder une licence de pirate dans One Piece.

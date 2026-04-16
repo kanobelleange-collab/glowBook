@@ -31,13 +31,8 @@ namespace Application.Features.Users.Commands.Login
                 throw new UnauthorizedAccessException("Email ou mot de passe incorrect.");
             }
 
-            // 2. Récupération du Nom selon le rôle
-            var nom = userAccount.Role switch
-            {
-                UserRole.Client => await _userRepository.GetClientNameAsync(userAccount.ReferenceId),
-                UserRole.Employee => (await _userRepository.GetEmployeeNameAsync(userAccount.ReferenceId))?.Nom,
-                _ => null
-            };
+            // 2. Récupération du Nom directement depuis UserAccount
+            var nom = userAccount.Nom;
 
             // 3. Génération du Token JWT
             var token = _authService.GenerateJwtToken(userAccount);
@@ -45,7 +40,7 @@ namespace Application.Features.Users.Commands.Login
             return new AuthResponseDto(
                 token,
                 userAccount.Email,
-                userAccount.Role.ToString(),
+                userAccount.Role,
                 userAccount.Id,
                 nom
             );

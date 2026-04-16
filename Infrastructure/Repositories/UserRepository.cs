@@ -51,8 +51,8 @@ namespace Infrastructure.Repositories
                     await _db.ExecuteAsync(sql, employee, transaction);
                 }
 
-                const string sqlUser = @"INSERT INTO UserAccounts (Id, Email, PasswordHash, Role, ReferenceId) 
-                                       VALUES (@Id, @Email, @PasswordHash, @Role, @ReferenceId)";
+                const string sqlUser = @"INSERT INTO UserAccounts (Id, Email, PasswordHash, Nom, Role, ReferenceId) 
+                                       VALUES (@Id, @Email, @PasswordHash, @Nom, @Role, @ReferenceId)";
                 await _db.ExecuteAsync(sqlUser, userAccount, transaction);
 
                 transaction.Commit();

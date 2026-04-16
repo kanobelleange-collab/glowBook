@@ -1,9 +1,8 @@
 using Application.Features.Admin.Interfaces;
-using Application.Features.Admin.Queries;
 using Domain.Entities;
 using MediatR;
 
-namespace Application.Features.Admin.Queries
+namespace Application.Features.Admin.Queries.GetPendingSalons
 {
     /// <summary>
     /// Handler pour les salons en attente, comme surveiller les nouveaux pirates dans One Piece.

@@ -1,8 +1,10 @@
+using Domain.Enum;
+
 namespace Application.Features.Users.Dto;
 
 public record UserProfileDto(
     Guid Id,
     string Email,
-    string Role,
+    UserRole Role,
     string Nom
 );

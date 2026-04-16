@@ -38,6 +38,6 @@ public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, UserPr
         }
 
         // 3. Retourne le DTO (UserId, Email, Role, Nom)
-        return new UserProfileDto(user.Id, user.Email, user.Role.ToString(), nom);
+        return new UserProfileDto(user.Id, user.Email, user.Role, nom);
     }
 }

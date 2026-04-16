@@ -43,6 +43,7 @@ namespace Infrastructure.DBcontext
             Description      TEXT          NULL,
             Note             DOUBLE        NOT NULL DEFAULT 0,
             NoteMoyenne      DOUBLE        NOT NULL DEFAULT 0,
+            EstApprouve      TINYINT(1)    NOT NULL DEFAULT 0,
             EstActif         TINYINT(1)    NOT NULL DEFAULT 1,
             IsDeleted        TINYINT(1)    NOT NULL DEFAULT 0,
             DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,19 +52,35 @@ namespace Infrastructure.DBcontext
             Longitude        DOUBLE        NOT NULL DEFAULT 0,
             INDEX IX_Etablissements_Ville (Ville),
             INDEX IX_Etablissements_EstActif (EstActif),
-            INDEX IX_Etablissements_Geo (Latitude, Longitude)
+            INDEX IX_Etablissements_Geo (Latitude, Longitude),
+            INDEX IX_Etablissements_EstApprouve (EstApprouve)
+        );
+
+        -- Nouvelle table Litiges (Pour tes notes point 4)
+        CREATE TABLE IF NOT EXISTS Litiges (
+            IntId            INT           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            Id               CHAR(36)      NOT NULL UNIQUE,
+            ClientId         CHAR(36)      NOT NULL,
+            RendezVousId     CHAR(36)      NOT NULL,
+            Motif            VARCHAR(255)  NOT NULL,
+            Description      TEXT          NOT NULL,
+            Statut           VARCHAR(20)   NOT NULL DEFAULT 'Ouvert', -- Ouvert, EnCours, Resolu
+            DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT FK_Litiges_Client FOREIGN KEY (ClientId) REFERENCES Clients(Id),
+            CONSTRAINT FK_Litiges_RDV FOREIGN KEY (RendezVousId) REFERENCES RendezVous(Id)
         );
 
         -- ✅ Ajout de la table UserAccounts (Indispensable pour l'Auth)
         CREATE TABLE IF NOT EXISTS UserAccounts (
-            Id           CHAR(36)     PRIMARY KEY,
-            Email        VARCHAR(191) UNIQUE NOT NULL,
-            PasswordHash VARCHAR(255) NOT NULL,
-            Role         INT          NOT NULL,
-            ReferenceId  CHAR(36)     NOT NULL,
-            ReferenceType VARCHAR(50) NOT NULL, -- Indispensable pour le switch de profil
-            IsActive     TINYINT(1)   NOT NULL DEFAULT 1,
-            DateCreation DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+            Id            CHAR(36)     PRIMARY KEY,
+            Email         VARCHAR(191) UNIQUE NOT NULL,
+            PasswordHash  VARCHAR(255) NOT NULL,
+            Role          INT          NOT NULL,
+            Nom           VARCHAR(100) NOT NULL, -- ✅ Ajouté ici pour l'auth et le profil rapide
+            ReferenceId   CHAR(36)     NOT NULL,
+            ReferenceType VARCHAR(50)  NOT NULL, -- Indispensable pour le switch de profil
+            IsActive      TINYINT(1)   NOT NULL DEFAULT 1,
+            DateCreation  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS Photos (
