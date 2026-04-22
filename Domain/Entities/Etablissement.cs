@@ -22,7 +22,8 @@ namespace Domain.Entities
         public List<string> Photos { get; private set; }
         public List<HoraireOuverture> Horaires { get; private set; }
         public List<EtablissementService> Services { get; private set; }
-        
+        public bool EstApprouve { get; private set; }
+
 
         public Etablissement(
             string nom,
@@ -33,59 +34,58 @@ namespace Domain.Entities
             string email,
             string? description = null)
         {
-            Id           = Guid.NewGuid();
-            Nom          = nom;
-            Adresse      = adresse;
-            Quartier     = string.Empty;
-            Categorie    =categorie;
-            Ville        = ville;
-            Telephone    = telephone;
-            Email        = email;
-            Description  = description;
-            Note         = 0;
-            NoteMoyenne  = 0;
-            EstActif     = true;
+            Id = Guid.NewGuid();
+            Nom = nom;
+            Adresse = adresse;
+            Quartier = string.Empty;
+            Categorie = categorie;
+            Ville = ville;
+            Telephone = telephone;
+            Email = email;
+            Description = description;
+            Note = 0;
+            NoteMoyenne = 0;
+            EstApprouve = false; // Par défaut, nécessite approbation comme un nouveau joueur dans un serveur
             DateCreation = DateTime.UtcNow;
-            Photos       = new List<string>();
-            Horaires     = new List<HoraireOuverture>();
-            Services     = new List<EtablissementService>();
-            
+            Photos = new List<string>();
+            Horaires = new List<HoraireOuverture>();
+            Services = new List<EtablissementService>();
+
         }
 
         // Constructeur vide pour Dapper
         public Etablissement()
         {
-            Nom       = string.Empty;
-            Adresse   = string.Empty;
-            Quartier  = string.Empty;
-            Categorie =default;
-            Ville     = string.Empty;
+            Nom = string.Empty;
+            Adresse = string.Empty;
+            Quartier = string.Empty;
+            Categorie = default;
+            Ville = string.Empty;
             Telephone = string.Empty;
-            Email     = string.Empty;
-            Photos    = new List<string>();
-            Horaires  = new List<HoraireOuverture>();
-            Services  = new List<EtablissementService>();
-            
+            Email = string.Empty;
+            Photos = new List<string>();
+            Horaires = new List<HoraireOuverture>();
+            Services = new List<EtablissementService>();
         }
 
         public void DefinirQuartier(string quartier) => Quartier = quartier;
 
         public void DefinirLocalisation(double latitude, double longitude)
         {
-            Latitude  = latitude;
+            Latitude = latitude;
             Longitude = longitude;
         }
 
         public void MettreAJour(
-            string nom, string adresse,string quartier, string ville,
+            string nom, string adresse, string quartier, string ville,
             string telephone, string email, string? description = null)
         {
-            Nom         = nom;
-            Adresse     = adresse;
-            Quartier    =quartier;
-            Ville       = ville;
-            Telephone   = telephone;
-            Email       = email;
+            Nom = nom;
+            Adresse = adresse;
+            Quartier = quartier;
+            Ville = ville;
+            Telephone = telephone;
+            Email = email;
             Description = description;
         }
 
@@ -131,55 +131,55 @@ namespace Domain.Entities
             DayOfWeek jour, TimeSpan ouverture,
             TimeSpan fermeture, bool estFerme = false)
         {
-            Jour           = jour;
+            Jour = jour;
             HeureOuverture = ouverture;
             HeureFermeture = fermeture;
-            EstFerme       = estFerme;
+            EstFerme = estFerme;
         }
 
-     public static TimeSpan ParseHeure(string heure)
-{
-    if (string.IsNullOrWhiteSpace(heure))
-        return TimeSpan.Zero;
+        public static TimeSpan ParseHeure(string heure)
+        {
+            if (string.IsNullOrWhiteSpace(heure))
+                return TimeSpan.Zero;
 
-    // Gestion du format "8h00" ou "8h30"
-    if (heure.Contains('h'))
-    {
-        var parts = heure.Split('h');
-        int heures = int.Parse(parts[0]);
-        int minutes = (parts.Length > 1 && !string.IsNullOrEmpty(parts[1]))
-         ? int.Parse(parts[1])
-        : 0;
-        return new TimeSpan(heures, minutes, 0);
+            // Gestion du format "8h00" ou "8h30"
+            if (heure.Contains('h'))
+            {
+                var parts = heure.Split('h');
+                int heures = int.Parse(parts[0]);
+                int minutes = (parts.Length > 1 && !string.IsNullOrEmpty(parts[1]))
+                 ? int.Parse(parts[1])
+                : 0;
+                return new TimeSpan(heures, minutes, 0);
+            }
+
+            // Fallback au parsing standard
+            return TimeSpan.Parse(heure);
+
+        }
+        public static DayOfWeek ConvertirJour(string jour)
+        {
+            return jour.Trim().ToLower() switch
+            {
+                "lundi" => DayOfWeek.Monday,
+                "mardi" => DayOfWeek.Tuesday,
+                "mercredi" => DayOfWeek.Wednesday,
+                "jeudi" => DayOfWeek.Thursday,
+                "vendredi" => DayOfWeek.Friday,
+                "samedi" => DayOfWeek.Saturday,
+                "dimanche" => DayOfWeek.Sunday,
+
+                // Support anglais aussi (bonus)
+                "monday" => DayOfWeek.Monday,
+                "tuesday" => DayOfWeek.Tuesday,
+                "wednesday" => DayOfWeek.Wednesday,
+                "thursday" => DayOfWeek.Thursday,
+                "friday" => DayOfWeek.Friday,
+                "saturday" => DayOfWeek.Saturday,
+                "sunday" => DayOfWeek.Sunday,
+
+                _ => throw new Exception($"Jour invalide : {jour}")
+            };
+        }
     }
-    
-    // Fallback au parsing standard
-    return TimeSpan.Parse(heure);
-    
-}
-public static DayOfWeek ConvertirJour(string jour)
-{
-    return jour.Trim().ToLower() switch
-    {
-        "lundi" => DayOfWeek.Monday,
-        "mardi" => DayOfWeek.Tuesday,
-        "mercredi" => DayOfWeek.Wednesday,
-        "jeudi" => DayOfWeek.Thursday,
-        "vendredi" => DayOfWeek.Friday,
-        "samedi" => DayOfWeek.Saturday,
-        "dimanche" => DayOfWeek.Sunday,
-
-        // Support anglais aussi (bonus)
-        "monday" => DayOfWeek.Monday,
-        "tuesday" => DayOfWeek.Tuesday,
-        "wednesday" => DayOfWeek.Wednesday,
-        "thursday" => DayOfWeek.Thursday,
-        "friday" => DayOfWeek.Friday,
-        "saturday" => DayOfWeek.Saturday,
-        "sunday" => DayOfWeek.Sunday,
-
-        _ => throw new Exception($"Jour invalide : {jour}")
-    };
-}
-}
 }

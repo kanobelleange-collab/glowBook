@@ -22,10 +22,9 @@ namespace Application.Features.Clients.Queries.GetAll
             {
                 // Id = c.Id,
                 Nom = c.Nom,
-                Email = c.Email,
                 Telephone = c.Telephone,
                 Ville = c.Ville,
-                
+
             }).ToList();
         }
     }
