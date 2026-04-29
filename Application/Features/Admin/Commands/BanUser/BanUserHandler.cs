@@ -2,7 +2,7 @@ using Application.Features.Admin.Commands;
 using Application.Features.Admin.Interfaces;
 using MediatR;
 
-namespace Application.Features.Admin.Commands
+namespace Application.Features.Admin.Commands.BanUser
 {
     /// <summary>
     /// Handler pour bannir/débannir un utilisateur, comme exiler un pirate dans One Piece.

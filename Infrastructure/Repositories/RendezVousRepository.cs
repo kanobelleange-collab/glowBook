@@ -3,6 +3,7 @@ using Domain.Entities;
 using Infrastructure.DBcontext;
 using Dapper;
 using System.Data;
+using Application.Features.Rendevou.DTOs;
 
 namespace Infrastructure.Repositories
 {
@@ -32,12 +33,13 @@ namespace Infrastructure.Repositories
             return result.ToList();
         }
 
-        // 3. Planning Praticien
-        public async Task<List<RendezVous>> GetByEmployeeAsync(Guid EmployeeId)
+        // 3. Planning Employee
+        // ✅ Corrigé : PraticienId → EmployeeId (aligné avec l'entité Domain)
+        public async Task<List<RendezVous>> GetByEmployeeAsync(Guid employeeId)
         {
             using var connection = _context.CreateConnection();
-            const string sql = "SELECT * FROM RendezVous WHERE PraticienId = @EmployeeId ORDER BY DateHeure ASC";
-            var result = await connection.QueryAsync<RendezVous>(sql, new { EmployeeId = EmployeeId });
+            const string sql = "SELECT * FROM RendezVous WHERE EmployeeId = @EmployeeId ORDER BY DateHeure ASC";
+            var result = await connection.QueryAsync<RendezVous>(sql, new { EmployeeId = employeeId });
             return result.ToList();
         }
 
@@ -50,46 +52,93 @@ namespace Infrastructure.Repositories
             return result.ToList();
         }
 
-        // 5. Agenda du jour pour un praticien
-        public async Task<List<RendezVous>> GetByEmployeeEtDateAsync(Guid EmployeeId, DateTime dateHeure)
+        // 5. Agenda du jour pour un employee
+        // ✅ Corrigé : DATE() → CAST AS DATE (compatible MySQL et SQL Server)
+        public async Task<List<RendezVous>> GetByEmployeeEtDateAsync(Guid employeeId, DateTime dateHeure)
         {
             using var connection = _context.CreateConnection();
-            // Utilisation de DATE() pour comparer uniquement le jour sans l'heure
             const string sql = @"
                 SELECT * FROM RendezVous 
                 WHERE EmployeeId = @EmployeeId 
-                AND DATE(DateHeure) = DATE(@Date)
+                AND CAST(DateHeure AS DATE) = CAST(@Date AS DATE)
                 AND Statut != @StatutAnnule";
-            
-            var result = await connection.QueryAsync<RendezVous>(sql, new { 
-                EmployeeId = EmployeeId, 
+
+            var result = await connection.QueryAsync<RendezVous>(sql, new
+            {
+                EmployeeId = employeeId,
                 Date = dateHeure,
-                StatutAnnule = (int)StatutRendezVous.Annule 
+                StatutAnnule = (int)StatutRendezVous.Annule
             });
             return result.ToList();
         }
 
-        // 6. Vérification anti-doublon (Crucial pour la création)
-        public async Task<bool> CreneauDejaOccupeAsync(Guid EmployeeId, DateTime dateHeure)
+        // 6. Agenda par Établissement et Date
+        // ✅ Corrigé : r.Service → r.ServiceId + JOIN Services
+        // ✅ Corrigé : PraticienId → EmployeeId dans les JOINs
+        // ✅ Corrigé : DateCreation ajouté dans le SELECT
+        public async Task<List<RendezVousDto>> GetAgendaAsync(Guid etablissementId, DateTime date, CancellationToken cancellationToken = default)
+        {
+            using var connection = _context.CreateConnection();
+            const string sql = @"
+                SELECT r.Id,
+                       r.EtablissementId,
+                       e.Nom       AS EtablissementNom,
+                       r.EmployeeId,
+                       p.Nom       AS EmployeeNom,
+                       r.ClientId,
+                       c.Nom       AS ClientNom,
+                       c.Email     AS ClientEmail,
+                       r.DateHeure,
+                       r.ServiceId,
+                       s.Nom       AS ServiceNom,
+                       r.Statut,
+                       r.Prix,
+                       r.NotesClient,
+                       r.RaisonAnnulation,
+                       r.DateCreation
+                FROM RendezVous r
+                LEFT JOIN UserAccounts  c ON r.ClientId       = c.Id
+                LEFT JOIN UserAccounts  p ON r.EmployeeId     = p.Id
+                LEFT JOIN Etablissements e ON r.EtablissementId = e.Id
+                LEFT JOIN Services       s ON r.ServiceId      = s.Id
+                WHERE r.EtablissementId = @EtablissementId
+                AND CAST(r.DateHeure AS DATE) = CAST(@Date AS DATE)
+                AND r.Statut != @StatutAnnule
+                ORDER BY r.DateHeure ASC";
+
+            var result = await connection.QueryAsync<RendezVousDto>(sql, new
+            {
+                EtablissementId = etablissementId,
+                Date = date,
+                StatutAnnule = (int)StatutRendezVous.Annule
+            });
+
+            return result.ToList();
+        }
+
+        // 7. Vérification anti-doublon
+        // ✅ Corrigé : EmployeeId cohérent avec l'entité
+        public async Task<bool> CreneauDejaOccupeAsync(Guid employeeId, DateTime dateHeure)
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
                 SELECT COUNT(1) FROM RendezVous 
                 WHERE EmployeeId = @EmployeeId 
-                AND DateHeure = @DateHeure 
+                AND DateHeure   = @DateHeure 
                 AND Statut IN (@Attente, @Confirme)";
-            
-            var count = await connection.ExecuteScalarAsync<int>(sql, new { 
-                EmployeeId = EmployeeId, 
-                DateHeure = dateHeure,
-                Attente = (int)StatutRendezVous.EnAttente,
-                Confirme = (int)StatutRendezVous.Confirme
+
+            var count = await connection.ExecuteScalarAsync<int>(sql, new
+            {
+                EmployeeId = employeeId,
+                DateHeure  = dateHeure,
+                Attente    = (int)StatutRendezVous.EnAttente,
+                Confirme   = (int)StatutRendezVous.Confirme
             });
-            
+
             return count > 0;
         }
 
-        // 7. Filtrage par Statut
+        // 8. Filtrage par Statut
         public async Task<List<RendezVous>> GetByStatutAsync(StatutRendezVous statut)
         {
             using var connection = _context.CreateConnection();
@@ -98,27 +147,30 @@ namespace Infrastructure.Repositories
             return result.ToList();
         }
 
-        // 8. Insertion (CREATE)
+        // 9. Insertion (CREATE)
+        // ✅ Corrigé : PraticienId → EmployeeId, DateCreation ajouté
         public async Task AddAsync(RendezVous rdv)
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
-                INSERT INTO RendezVous (  ClientId, EmployeeId, ServiceId, EtablissementId,DateHeure, Statut, Prix, NotesClient, RaisonAnnulation)
-                VALUES (  @ClientId, @EmployeeId, @ServiceId, @EtablissementId,@DateHeure, @Statut, @Prix, @NotesClient, @RaisonAnnulation)";
-            
+                INSERT INTO RendezVous 
+                    (Id, ClientId, EmployeeId, ServiceId, EtablissementId, DateHeure, Statut, Prix, NotesClient, RaisonAnnulation, DateCreation)
+                VALUES 
+                    (@Id, @ClientId, @EmployeeId, @ServiceId, @EtablissementId, @DateHeure, @Statut, @Prix, @NotesClient, @RaisonAnnulation, @DateCreation)";
+
             await connection.ExecuteAsync(sql, rdv);
         }
 
-        // 9. Mise à jour (UPDATE)
+        // 10. Mise à jour (UPDATE)
         public async Task MettreAJourAsync(RendezVous rdv)
         {
             using var connection = _context.CreateConnection();
             const string sql = @"
                 UPDATE RendezVous 
-                SET Statut = @Statut, 
-                    RaisonAnnulation = @RaisonAnnulation,
+                SET Statut           = @Statut, 
+                    RaisonAnnulation = @RaisonAnnulation
                 WHERE Id = @Id";
-            
+
             await connection.ExecuteAsync(sql, rdv);
         }
     }

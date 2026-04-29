@@ -9,41 +9,42 @@ namespace Application.Features.Employees.Commands.CreerEmployee
     public class CreerEmployeeCommandHandler
         : IRequestHandler<CreerEmployeeCommand, EmployeeDto>
     {
-        private readonly IEmployeeRepository _EmployeeRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
 
         public CreerEmployeeCommandHandler(
             IEmployeeRepository employeeRepository,
             IMapper mapper)
         {
-            _EmployeeRepository = employeeRepository;
-            _mapper              = mapper;
+            _employeeRepository = employeeRepository;
+            _mapper = mapper;
         }
 
         public async Task<EmployeeDto> Handle(
             CreerEmployeeCommand command,
             CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(command.Nom, nameof(command.Nom));
+            ArgumentNullException.ThrowIfNull(command.Prenom, nameof(command.Prenom));
+            ArgumentNullException.ThrowIfNull(command.Specialite, nameof(command.Specialite));
+
             // 1. Créer l'entité
             var employee = new Employee(
-                
                 command.EtablissementId,
                 command.Nom,
-
                 command.Prenom,
                 command.Specialite,
-                command.UrlPhoto,
-               
+                string.Empty,
                 command.AnneeExperience
-                
-            );
+            )
+            {
+                UrlPhoto = command.UrlPhoto
+            };
 
-          // 2. Ajouter la description si présente
+            // 2. Sauvegarder en base
+            await _employeeRepository.AddAsync(employee);
 
-            // 3. Sauvegarder en base
-            await _EmployeeRepository.AddAsync(employee);
-
-            // 4. Mapper et retourner
+            // 3. Mapper et retourner
             return _mapper.Map<EmployeeDto>(employee);
         }
     }

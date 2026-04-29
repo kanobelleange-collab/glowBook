@@ -1,6 +1,8 @@
+using Application.Features.Admin.Dtos;
 using Application.Features.Admin.Interfaces;
 using Dapper;
 using Domain.Entities;
+using Domain.Enum;
 using System.Data;
 
 namespace Infrastructure.Repositories
@@ -53,6 +55,20 @@ namespace Infrastructure.Repositories
             var totalRDV = await _db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM RendezVous");
 
             return new AdminStatsDto(totalClients, totalSalons, totalRDV);
+        }
+
+        public async Task<List<Litige>> GetActiveLitigesAsync()
+        {
+            const string sql = "SELECT * FROM Litiges WHERE Statut != @StatutResolu";
+            var litiges = await _db.QueryAsync<Litige>(sql, new { StatutResolu = StatutLitige.Resolu });
+            return litiges.ToList();
+        }
+
+        public async Task<bool> UpdateLitigeStatusAsync(Guid litigeId, StatutLitige nouveauStatut)
+        {
+            const string sql = "UPDATE Litiges SET Statut = @Statut WHERE Id = @Id";
+            var rowsAffected = await _db.ExecuteAsync(sql, new { Id = litigeId, Statut = nouveauStatut });
+            return rowsAffected > 0;
         }
     }
 }

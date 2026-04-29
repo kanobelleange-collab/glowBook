@@ -17,7 +17,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
         : IRequestHandler<CreerRendeVousCommand, RendezVousDto>
     {
         private readonly IRendezVousRepository _rdvRepository;
-        private readonly IEmployeeRepository _EmployeeRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IEtablissementRepository _etablissementRepository;
         private readonly IPrestationRepository _prestationRepository;
         private readonly INotificationService _notificationService;
@@ -30,7 +30,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             INotificationService notificationService)
         {
             _rdvRepository       = rdvRepository;
-            _EmployeeRepository = employeeRepository;
+            _employeeRepository = employeeRepository;
             _etablissementRepository   = etablissementRepository;
             _prestationRepository   = prestationRepository;
             _notificationService = notificationService;
@@ -40,7 +40,7 @@ namespace Application.Features.Rendevou.Commands.CreerRendeVous
             CreerRendeVousCommand command,
             CancellationToken cancellationToken)
         {
-            var employee = await _EmployeeRepository.GetByIdAsync(command.EmployeeId)
+            var employee = await _employeeRepository.GetByIdAsync(command.EmployeeId)
                 ?? throw new Exception("Employer introuvable.");
 
             bool occupe = await _rdvRepository

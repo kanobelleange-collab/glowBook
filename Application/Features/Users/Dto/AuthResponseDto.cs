@@ -1,11 +1,12 @@
+using Domain.Enum;
+
 namespace Application.Features.Users.Dto
 {
     public record AuthResponseDto(
         string Token,
         string Email,
-        string Role,
+        UserRole Role,
         Guid UserId,
-        string? Nom,
-        string? Prenom
+        string? Nom
     );
 }

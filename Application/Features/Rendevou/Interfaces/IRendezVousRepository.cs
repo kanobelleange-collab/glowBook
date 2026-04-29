@@ -1,5 +1,6 @@
 using System;
 using Domain.Entities;
+using  Application.Features.Rendevou.DTOs;
 
 
 namespace Application.Features.Rendevou.Interfaces
@@ -10,6 +11,11 @@ namespace Application.Features.Rendevou.Interfaces
     {
         // Récupérer un rendez-vous par son Id
         Task<RendezVous?> GetByIdAsync(Guid id);
+        Task<List<RendezVousDto>> GetAgendaAsync(
+        Guid etablissementId,
+        DateTime date,
+        CancellationToken cancellationToken);
+        
 
         // Récupérer tous les RDV d'un client
         Task<List<RendezVous>> GetByClientAsync(Guid clientId);

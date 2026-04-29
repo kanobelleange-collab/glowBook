@@ -1,5 +1,9 @@
-using Application.Features.Admin.Commands;
+using Application.Features.Admin.Commands.Approvesalon;
+using Application.Features.Admin.Commands.BanUser;
+using Application.Features.Admin.Commands.ResolveLitige;
 using Application.Features.Admin.Queries;
+using Application.Features.Admin.Queries.GetAdminStats;
+using Application.Features.Admin.Queries.GetPendingSalons;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -74,6 +78,21 @@ namespace WebAPI.Controllers
             {
                 return NotFound(new { Error = ex.Message });
             }
+        }
+
+        [HttpGet("litiges")]
+        public async Task<IActionResult> GetLitiges()
+        {
+            // Tu devras créer la Query correspondante GetActiveLitigesQuery
+            var litiges = await _mediator.Send(new GetActiveLitigesQuery());
+            return Ok(litiges);
+        }
+
+        [HttpPost("litiges/resolve")]
+        public async Task<IActionResult> ResolveLitige([FromBody] ResolveLitigeCommand command)
+        {
+            var success = await _mediator.Send(command);
+            return Ok(new { Message = "Verdict rendu par la Marine." });
         }
     }
 }

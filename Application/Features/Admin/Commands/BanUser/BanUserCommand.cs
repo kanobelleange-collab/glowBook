@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Features.Admin.Commands
+namespace Application.Features.Admin.Commands.BanUser
 {
     /// <summary>
     /// Command pour bannir/débannir un utilisateur, comme blacklist dans un serveur de jeu.
