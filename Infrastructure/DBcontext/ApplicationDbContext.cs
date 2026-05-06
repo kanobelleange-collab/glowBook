@@ -180,7 +180,7 @@ namespace Infrastructure.DBcontext
             RaisonAnnulation TEXT          NULL,
             DateCreation     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT FK_RDV_Client        FOREIGN KEY (ClientId)        REFERENCES Clients(Id),
-            CONSTRAINT FK_RDV_Employee      FOREIGN KEY (EmployeesId)      REFERENCES Employees(Id),
+            CONSTRAINT FK_RDV_Employee      FOREIGN KEY (EmployeeId)      REFERENCES Employees(Id),
             CONSTRAINT FK_RDV_Etablissement FOREIGN KEY (EtablissementId) REFERENCES Etablissements(Id),
             INDEX IX_RDV_Client (ClientId)
         );
